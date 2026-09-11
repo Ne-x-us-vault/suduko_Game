@@ -1,108 +1,184 @@
-import 'dart:math';
+import '../../core/constants/app_constants.dart';
+import '../../core/errors/app_exceptions.dart';
+import '../../core/utilities/seeded_random.dart';
+import '../difficulty/difficulty_engine.dart';
+import '../model/difficulty.dart';
 import '../model/position.dart';
 import '../model/puzzle.dart';
 import '../solver/queens_solver.dart';
 import '../validation/constraint_engine.dart';
 import '../validation/region_validator.dart';
+import 'region_generator.dart';
 
+/// Complete procedural puzzle generator.
+///
+/// Fully deterministic: the same `(size, seed, generatorVersion, config)`
+/// always produces the identical puzzle. Every returned puzzle has been
+/// validated: region layout valid, exactly one solution (countSolutions == 1),
+/// solution satisfies all rules.
 class PuzzleGenerator {
-  final Random _random;
+  const PuzzleGenerator();
 
-  PuzzleGenerator([int? seed]) : _random = seed != null ? Random(seed) : Random();
+  /// Generates a unique-solution puzzle. If [targetDifficulty] is provided,
+  /// generation is retried until the classified difficulty matches it.
+  ///
+  /// Throws [PuzzleGenerationException] if no valid puzzle can be produced
+  /// within [maxAttempts]. Never returns an unverified puzzle.
+  Puzzle generate({
+    required int size,
+    required int seed,
+    int? generatorVersion,
+    Difficulty? targetDifficulty,
+  }) {
+    if (!kSupportedBoardSizes.contains(size)) {
+      throw PuzzleGenerationException(
+        size: size,
+        seed: seed,
+        attempts: 0,
+        reason: 'Unsupported size $size',
+      );
+    }
 
-  Puzzle generate(int size, Difficulty difficulty) {
-    int attempts = 0;
-    while (attempts < 2000) {
-      attempts++;
-      
-      List<Position> solution = _generateValidQueenPlacement(size);
+    final gv = generatorVersion ?? kGeneratorVersion;
+    Puzzle? bestByDifficulty;
+    double bestDistance = double.infinity;
+
+    for (int attempt = 0; attempt < kMaxGenerationAttempts; attempt++) {
+      // Per-attempt deterministic stream: seed + attempt.
+      final rng = SeededRandom(_attemptSeed(seed, gv, attempt));
+
+      final solution = _generateSolution(size, rng);
       if (solution == null) continue;
 
-      List<List<int>> regionMap = _generateRegions(size, solution);
+      final regionGenerator = RegionGenerator(rng);
+      final regionMap = regionGenerator.generate(size, solution);
       if (regionMap == null) continue;
 
-      Puzzle puzzle = Puzzle(
-        id: 'gen_${DateTime.now().millisecondsSinceEpoch}_${_random.nextInt(1000)}',
-        size: size,
-        regionMap: regionMap,
-        solution: solution,
-        seed: _random.nextInt(100000),
-        generatorVersion: 1,
-        difficulty: difficulty,
-        difficultyMetrics: {'attempts': attempts},
-      );
+      final puzzle = _buildPuzzle(
+          id: _makeId(size, seed, gv),
+          size: size,
+          seed: seed,
+          generatorVersion: gv,
+          regionMap: regionMap,
+          solution: solution);
 
-      if (QueensSolver.countSolutions(puzzle, limit: 2) == 1) {
-        if (RegionValidator.isValidRegionLayout(puzzle)) {
-          return puzzle;
-        }
+      // Validate structure + uniqueness before trusting it.
+      if (RegionValidator.validate(puzzle) != null) continue;
+      final count = QueensSolver.countSolutions(puzzle);
+      if (count != 1) continue;
+
+      final classified =
+          DifficultyEngine.classify(puzzle);
+      final scoredPuzzle = puzzle.withDifficultyScore(classified);
+      final structOk = ConstraintEngine.validatePuzzle(scoredPuzzle) == null;
+      if (!structOk) continue;
+
+      if (targetDifficulty == null) return scoredPuzzle;
+
+      if (classified.difficulty == targetDifficulty) {
+        return scoredPuzzle;
+      }
+      final distance = _difficultyDistance(classified, targetDifficulty);
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestByDifficulty = scoredPuzzle;
       }
     }
-    throw Exception("Failed to generate a unique puzzle after 2000 attempts.");
+
+    // Fall back to the closest-difficulty verified puzzle.
+    if (targetDifficulty != null && bestByDifficulty != null) {
+      return bestByDifficulty;
+    }
+
+    throw PuzzleGenerationException(
+      size: size,
+      seed: seed,
+      attempts: kMaxGenerationAttempts,
+    );
   }
 
-  List<Position>? _generateValidQueenPlacement(int size) {
-    List<Position> placements = [];
-    if (_placeQueensRecursive(size, 0, placements)) return placements;
+  int _attemptSeed(int seed, int gv, int attempt) {
+    var x = seed;
+    x ^= (gv * 2654435761);
+    x += (attempt + 1) * 40503;
+    x &= 0xFFFFFFFF;
+    return x;
+  }
+
+  double _difficultyDistance(DifficultyScore a, Difficulty b) {
+    final order = {Difficulty.easy: 0, Difficulty.medium: 1, Difficulty.hard: 2, Difficulty.expert: 3};
+    return (order[a.difficulty]! - order[b]!).abs().toDouble();
+  }
+
+  String _makeId(int size, int seed, int gv) => 'q$gv-s$seed-n$size';
+
+  /// Generates N queens, one per row and column, no two king-adjacent.
+  /// Backtracking with shuffled column order.
+  List<Position>? _generateSolution(int size, SeededRandom rng) {
+    final placements = <Position>[];
+    if (_place(0, size, rng, placements)) return placements;
     return null;
   }
 
-  bool _placeQueensRecursive(int size, int row, List<Position> placements) {
+  bool _place(int row, int size, SeededRandom rng, List<Position> acc) {
     if (row == size) return true;
-
-    List<int> cols = List.generate(size, (i) => i)..shuffle(_random);
-    for (int col in cols) {
-      Position pos = Position(row, col);
-      if (_isValidQueenOnly(pos, placements)) {
-        placements.add(pos);
-        if (_placeQueensRecursive(size, row + 1, placements)) return true;
-        placements.removeLast();
+    final cols = List.generate(size, (i) => i);
+    rng.shuffle(cols);
+    for (final col in cols) {
+      final pos = Position(row, col);
+      var ok = true;
+      for (final p in acc) {
+        if (p.col == col || pos.isKingAdjacentTo(p)) {
+          ok = false;
+          break;
+        }
       }
+      if (!ok) continue;
+      acc.add(pos);
+      if (_place(row + 1, size, rng, acc)) return true;
+      acc.removeLast();
     }
     return false;
   }
 
-  bool _isValidQueenOnly(Position pos, List<Position> placements) {
-    for (var p in placements) {
-      if (p.row == pos.row || p.col == pos.col) return false;
-      if ((p.row - pos.row).abs() <= 1 && (p.col - pos.col).abs() <= 1) return false;
-    }
-    return true;
-  }
-
-  List<List<int>>? _generateRegions(int size, List<Position> queens) {
-    List<List<int>> map = List.generate(size, (_) => List.filled(size, -1));
-    
-    for (int i = 0; i < size; i++) {
-      map[queens[i].row][queens[i].col] = i;
-    }
-
-    List<Position> unassigned = [];
-    for (int r = 0; r < size; r++) {
-      for (int c = 0; c < size; c++) {
-        if (map[r][c] == -1) unassigned.add(Position(r, c));
-      }
-    }
-
-    unassigned.shuffle(_random);
-
-    while (unassigned.isNotEmpty) {
-      Position curr = unassigned.removeAt(0);
-      List<int> neighborRegions = _getNeighborRegions(curr, size, map);
-      
-      if (neighborRegions.isEmpty) return null;
-      map[curr.row][curr.col] = neighborRegions[_random.nextInt(neighborRegions.length)];
-    }
-
-    return map;
-  }
-
-  List<int> _getNeighborRegions(Position pos, int size, List<List<int>> map) {
-    List<int> regions = [];
-    if (pos.row > 0 && map[pos.row - 1][pos.col] != -1) regions.add(map[pos.row - 1][pos.col]);
-    if (pos.row < size - 1 && map[pos.row + 1][pos.col] != -1) regions.add(map[pos.row + 1][pos.col]);
-    if (pos.col > 0 && map[pos.row][pos.col - 1] != -1) regions.add(map[pos.row][pos.col - 1]);
-    if (pos.col < size - 1 && map[pos.row][pos.col + 1] != -1) regions.add(map[pos.row][pos.col + 1]);
-    return regions.toSet().toList();
+  Puzzle _buildPuzzle({
+    required String id,
+    required int size,
+    required int seed,
+    required int generatorVersion,
+    required List<List<int>> regionMap,
+    required List<Position> solution,
+  }) {
+    return Puzzle(
+      id: id,
+      size: size,
+      regionMap: regionMap,
+      solution: solution,
+      seed: seed,
+      generatorVersion: generatorVersion,
+      difficultyScore: const DifficultyScore(
+        humanScore: 0,
+        computationalScore: 0,
+        finalScore: 0,
+        difficulty: Difficulty.easy,
+        humanMetrics: DifficultyMetrics.empty(),
+        computationalMetrics: SolverMetrics.empty(),
+        solvedByDeduction: false,
+      ),
+    );
   }
 }
+
+extension _PuzzleWithScore on Puzzle {
+  Puzzle withDifficultyScore(DifficultyScore score) => Puzzle(
+        id: id,
+        size: size,
+        regionMap: regionMap,
+        solution: solution,
+        seed: seed,
+        generatorVersion: generatorVersion,
+        difficultyScore: score,
+      );
+}
+
+/// Removed placeholder typedef.

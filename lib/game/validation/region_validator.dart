@@ -1,66 +1,87 @@
 import '../model/position.dart';
 import '../model/puzzle.dart';
 
+/// Validates structural region layout: exactly N regions, every cell assigned,
+/// every region orthogonally connected, full board coverage.
+
 class RegionValidator {
-  static bool isValidRegionLayout(Puzzle puzzle) {
-    int size = puzzle.size;
-    
-    // Check: Exactly N regions
-    Set<int> regionsFound = {};
+  RegionValidator._();
+
+  /// Returns null if valid, or an error description string.
+  static String? validate(Puzzle puzzle) {
+    final size = puzzle.size;
+
+    // 1. Every cell has a valid region id, no invalid ids, full coverage.
+    final Set<int> regionIds = {};
+    final List<int> regionCellCounts = List.filled(size, 0);
+
     for (int r = 0; r < size; r++) {
       for (int c = 0; c < size; c++) {
-        regionsFound.add(puzzle.regionMap[r][c]);
+        final rid = puzzle.regionMap[r][c];
+        if (rid < 0 || rid >= size) return 'Invalid region id $rid at ($r,$c)';
+        regionIds.add(rid);
+        regionCellCounts[rid]++;
       }
     }
-    if (regionsFound.length != size) return false;
 
-    // Check: Every region is orthogonally connected
-    for (int regionId in regionsFound) {
-      if (!_isConnected(puzzle, regionId)) return false;
+    // 2. Exactly N regions.
+    if (regionIds.length != size) {
+      return 'Expected $size regions, found ${regionIds.length}';
     }
 
-    return true;
+    // 3. Every region has at least one cell (automatic if ids in 0..N-1 and
+    //    all covered, but explicit for safety).
+    for (int i = 0; i < size; i++) {
+      if (regionCellCounts[i] == 0) return 'Region $i is empty';
+    }
+
+    // 4. Every region is orthogonally connected.
+    for (int rid = 0; rid < size; rid++) {
+      if (!_isConnected(puzzle, rid)) {
+        return 'Region $rid is not orthogonally connected';
+      }
+    }
+
+    return null;
   }
 
+  static bool isValid(Puzzle puzzle) => validate(puzzle) == null;
+
   static bool _isConnected(Puzzle puzzle, int regionId) {
-    int size = puzzle.size;
-    Position? startPos;
-    int totalCellsInRegion = 0;
+    final size = puzzle.size;
+    Position? start;
+    int count = 0;
 
     for (int r = 0; r < size; r++) {
       for (int c = 0; c < size; c++) {
         if (puzzle.regionMap[r][c] == regionId) {
-          if (startPos == null) startPos = Position(r, c);
-          totalCellsInRegion++;
+          start ??= Position(r, c);
+          count++;
         }
       }
     }
+    if (start == null || count == 0) return false;
 
-    if (startPos == null) return false;
-
-    // BFS to find all reachable cells in the region
-    Set<Position> visited = {startPos};
-    List<Position> queue = [startPos];
-
+    // BFS.
+    final visited = <Position>{start};
+    final queue = [start];
     while (queue.isNotEmpty) {
-      Position curr = queue.removeAt(0);
-      for (var neighbor in _getNeighbors(curr, size)) {
-        if (puzzle.regionMap[neighbor.row][neighbor.col] == regionId && !visited.contains(neighbor)) {
-          visited.add(neighbor);
-          queue.add(neighbor);
+      final curr = queue.removeAt(0);
+      for (final nb in _orthogonalNeighbors(curr, size)) {
+        if (puzzle.regionMap[nb.row][nb.col] == regionId && visited.add(nb)) {
+          queue.add(nb);
         }
       }
     }
-
-    return visited.length == totalCellsInRegion;
+    return visited.length == count;
   }
 
-  static List<Position> _getNeighbors(Position pos, int size) {
-    List<Position> neighbors = [];
-    if (pos.row > 0) neighbors.add(Position(pos.row - 1, pos.col));
-    if (pos.row < size - 1) neighbors.add(Position(pos.row + 1, pos.col));
-    if (pos.col > 0) neighbors.add(Position(pos.row, pos.col - 1));
-    if (pos.col < size - 1) neighbors.add(Position(pos.row, pos.col + 1));
-    return neighbors;
+  static List<Position> _orthogonalNeighbors(Position pos, int size) {
+    final result = <Position>[];
+    if (pos.row > 0) result.add(Position(pos.row - 1, pos.col));
+    if (pos.row < size - 1) result.add(Position(pos.row + 1, pos.col));
+    if (pos.col > 0) result.add(Position(pos.row, pos.col - 1));
+    if (pos.col < size - 1) result.add(Position(pos.row, pos.col + 1));
+    return result;
   }
 }

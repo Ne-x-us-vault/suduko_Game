@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'position.dart';
 
+/// A single static board cell: its address and its region id.
+/// Immutable. Player state is stored separately (see GameState).
 @immutable
 class Cell {
   final Position position;
@@ -18,5 +20,8 @@ class Cell {
   }
 
   @override
-  int get hashCode => position.hashCode ^ regionId.hashCode;
+  int get hashCode => Object.hash(runtimeType, position, regionId);
+
+  @override
+  String toString() => 'Cell($position, r$regionId)';
 }
