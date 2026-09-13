@@ -3,6 +3,7 @@
 /// The Daily Challenge is tied to the player's *local* calendar date. All
 /// comparisons are done on a normalized "date key" (yyyy-MM-dd) so timezones,
 /// midnight and DST transitions behave predictably.
+library;
 
 class DateUtils {
   DateUtils._();

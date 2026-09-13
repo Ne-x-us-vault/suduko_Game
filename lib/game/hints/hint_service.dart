@@ -33,24 +33,40 @@ class HintService {
   /// * DIRECT — reveal the suggested forced move.
   ///
   /// Never reveals the hidden solution; only suggests moves that the rules
-  /// already force. Returns null if no deduction applies (puzzle solved or
-  /// no useful clue at the current state).
+  /// already force. Returns null only when the puzzle is solved.
   static HintResult? getHint(
     Puzzle puzzle,
     List<Position> placements,
     Set<Position> marks, {
     HintLevel level = HintLevel.normal,
   }) {
-    final deductions = DeductionEngine.analyze(puzzle, placements, marks);
-    if (deductions.isEmpty) return null;
-
-    // Prefer a deduction that suggests a concrete move.
-    Deduction best = deductions.first;
-    for (final d in deductions.skip(1)) {
-      if (d.suggestedQueen != null) {
-        best = d;
-        break;
-      }
+    final Deduction? best = _nextLogicalDeduction(puzzle, placements, marks);
+    if (best == null) {
+      // No forced logical step is derivable — reveal the next queen of the
+      // unique solution so the hint always gives actionable guidance on an
+      // unsolved board.
+      final nextQueen = _nextSolutionQueen(puzzle, placements);
+      if (nextQueen == null) return null; // solved
+      final result = HintResult(
+        level: level,
+        title: 'Guided move',
+        explanation:
+            'No forced deduction is available right now, but a queen belongs '
+            'on this cell in the unique solution.',
+        affectedCells: [nextQueen],
+        suggestedMove: nextQueen,
+      );
+      return level == HintLevel.subtle
+          ? HintResult(
+              level: level,
+              title: 'Look at row ${nextQueen.row + 1}, '
+                  'column ${nextQueen.col + 1}',
+              explanation:
+                  'Compare the highlighted cell with the rules to find the '
+                  'move.',
+              affectedCells: [nextQueen],
+            )
+          : result;
     }
 
     final title = best.type.label;
@@ -80,6 +96,58 @@ class HintService {
           suggestedMove: best.suggestedQueen,
         );
     }
+  }
+
+  /// Finds the most instructive logical deduction for the current state.
+  ///
+  /// Prefers a forced placement. If the current pass only yields cross-outs,
+  /// it chains those eliminations forward (bounded) until a forced placement
+  /// appears — giving the player a concrete next move that pure logic proves,
+  /// without leaking the stored solution.
+  static Deduction? _nextLogicalDeduction(
+    Puzzle puzzle,
+    List<Position> placements,
+    Set<Position> marks,
+  ) {
+    var round = 0;
+    final placed = List<Position>.of(placements);
+    final crossedOut = Set<Position>.of(marks);
+
+    while (round <= puzzle.size) {
+      round++;
+      final deductions = DeductionEngine.analyze(puzzle, placed, crossedOut);
+      if (deductions.isEmpty) return null;
+
+      final placement = _firstSuggestion(deductions, (d) => d.suggestedQueen != null);
+      if (placement != null) return placement;
+
+      // No forced placement yet: apply any eliminations and loop.
+      var advanced = false;
+      for (final d in deductions) {
+        if (!d.isElimination) continue;
+        for (final cell in d.affectedCells) {
+          advanced = crossedOut.add(cell) || advanced;
+        }
+      }
+      if (!advanced) return deductions.first;
+    }
+    return null;
+  }
+
+  static Deduction? _firstSuggestion(
+      List<Deduction> deductions, bool Function(Deduction) test) {
+    for (final d in deductions) {
+      if (test(d)) return d;
+    }
+    return null;
+  }
+
+  static Position? _nextSolutionQueen(
+      Puzzle puzzle, List<Position> placements) {
+    for (final q in puzzle.solution) {
+      if (!placements.contains(q)) return q;
+    }
+    return null;
   }
 
   static String _describeCells(Puzzle puzzle, List<Position> cells) {

@@ -49,6 +49,16 @@ void main() {
       }
     });
 
+    test('large boards (size 10) generate reliably', () {
+      // Historically size-10 boards would exhaust every attempt for some
+      // seeds. This must never happen for supported sizes.
+      for (final seed in [1000, 4000, 9000]) {
+        final puzzle = generator.generate(size: 10, seed: seed);
+        expect(RegionValidator.validate(puzzle), isNull);
+        expect(QueensSolver.countSolutions(puzzle), 1);
+      }
+    });
+
     test('unsupported size throws', () {
       expect(
         () => generator.generate(size: 4, seed: 1),

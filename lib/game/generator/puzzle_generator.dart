@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import '../../core/constants/app_constants.dart';
 import '../../core/errors/app_exceptions.dart';
 import '../../core/utilities/seeded_random.dart';
@@ -42,46 +44,55 @@ class PuzzleGenerator {
     final gv = generatorVersion ?? kGeneratorVersion;
     Puzzle? bestByDifficulty;
     double bestDistance = double.infinity;
+    // Larger boards need more attempts: grow from a base of 400 by ~300 per
+    // extra row/column so size-10 boards have enough room to hit uniqueness.
+    final maxAttempts = math.max(
+        kMaxGenerationAttempts, (size - 5) * 300);
 
-    for (int attempt = 0; attempt < kMaxGenerationAttempts; attempt++) {
+    for (int attempt = 0; attempt < maxAttempts; attempt++) {
       // Per-attempt deterministic stream: seed + attempt.
-      final rng = SeededRandom(_attemptSeed(seed, gv, attempt));
+      final attemptSeed = _attemptSeed(seed, gv, attempt);
+      
+      // Try multiple region generation strategies per solution
+      for (int strategy = 0; strategy < 5; strategy++) {
+        final rng = SeededRandom(attemptSeed + strategy * 1009);
+        
+        final solution = _generateSolution(size, rng);
+        if (solution == null) continue;
 
-      final solution = _generateSolution(size, rng);
-      if (solution == null) continue;
+        final regionGenerator = RegionGenerator(rng, strategy: strategy);
+        final regionMap = regionGenerator.generate(size, solution);
+        if (regionMap == null) continue;
 
-      final regionGenerator = RegionGenerator(rng);
-      final regionMap = regionGenerator.generate(size, solution);
-      if (regionMap == null) continue;
+        final puzzle = _buildPuzzle(
+            id: _makeId(size, seed, gv),
+            size: size,
+            seed: seed,
+            generatorVersion: gv,
+            regionMap: regionMap,
+            solution: solution);
 
-      final puzzle = _buildPuzzle(
-          id: _makeId(size, seed, gv),
-          size: size,
-          seed: seed,
-          generatorVersion: gv,
-          regionMap: regionMap,
-          solution: solution);
+        // Validate structure + uniqueness before trusting it.
+        if (RegionValidator.validate(puzzle) != null) continue;
+        final count = QueensSolver.countSolutions(puzzle);
+        if (count != 1) continue;
 
-      // Validate structure + uniqueness before trusting it.
-      if (RegionValidator.validate(puzzle) != null) continue;
-      final count = QueensSolver.countSolutions(puzzle);
-      if (count != 1) continue;
+        final classified =
+            DifficultyEngine.classify(puzzle);
+        final scoredPuzzle = puzzle.withDifficultyScore(classified);
+        final structOk = ConstraintEngine.validatePuzzle(scoredPuzzle) == null;
+        if (!structOk) continue;
 
-      final classified =
-          DifficultyEngine.classify(puzzle);
-      final scoredPuzzle = puzzle.withDifficultyScore(classified);
-      final structOk = ConstraintEngine.validatePuzzle(scoredPuzzle) == null;
-      if (!structOk) continue;
+        if (targetDifficulty == null) return scoredPuzzle;
 
-      if (targetDifficulty == null) return scoredPuzzle;
-
-      if (classified.difficulty == targetDifficulty) {
-        return scoredPuzzle;
-      }
-      final distance = _difficultyDistance(classified, targetDifficulty);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestByDifficulty = scoredPuzzle;
+        if (classified.difficulty == targetDifficulty) {
+          return scoredPuzzle;
+        }
+        final distance = _difficultyDistance(classified, targetDifficulty);
+        if (distance < bestDistance) {
+          bestDistance = distance;
+          bestByDifficulty = scoredPuzzle;
+        }
       }
     }
 
@@ -180,5 +191,3 @@ extension _PuzzleWithScore on Puzzle {
         difficultyScore: score,
       );
 }
-
-/// Removed placeholder typedef.

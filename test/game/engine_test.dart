@@ -8,15 +8,16 @@ import 'package:queens_game/game/validation/region_validator.dart';
 
 /// A hand-crafted 4×4 puzzle with one queen per row/column/region and no two
 /// queens adjacent: queens at (0,1),(1,3),(2,0),(3,2).
+/// Regions are designed to ensure a unique solution.
 Puzzle buildTestPuzzle4() {
   return Puzzle(
     id: 't4',
     size: 4,
     regionMap: const [
-      [0, 0, 0, 0],
-      [1, 1, 1, 1],
-      [2, 2, 2, 2],
-      [3, 3, 3, 3],
+      [0, 0, 0, 1],
+      [0, 2, 1, 1],
+      [2, 2, 3, 3],
+      [2, 3, 3, 3],
     ],
     solution: const [
       Position(0, 1),
@@ -40,17 +41,16 @@ DifficultyScore _emptyScore() => const DifficultyScore(
       solvedByDeduction: false,
     );
 
-/// A 4×4 layout with disconnected regions (region 1 cells at (0,3) and (2,3)
-/// share no orthogonal path).
+/// A 4×4 layout with disconnected regions.
 Puzzle buildBadLayout4() {
   return Puzzle(
     id: 'bad4',
     size: 4,
     regionMap: const [
-      [0, 0, 0, 1],
-      [2, 2, 2, 0],
-      [0, 3, 0, 1],
-      [3, 3, 3, 3],
+      [0, 0, 1, 1],
+      [2, 2, 3, 3],
+      [0, 3, 1, 2],
+      [3, 3, 0, 0],
     ],
     solution: const [
       Position(0, 1),
@@ -82,7 +82,7 @@ void main() {
 
   group('ConstraintEngine', () {
     final puzzle = buildTestPuzzle4();
-    final solution = const [
+    const solution = [
       Position(0, 1),
       Position(1, 3),
       Position(2, 0),
@@ -117,26 +117,31 @@ void main() {
     });
 
     test('isValidQueenPlacement checks all four rule types', () {
+      // Row conflict: (1,1) vs (1,3) - same row 1
       expect(
         ConstraintEngine.isValidQueenPlacement(
-            puzzle, const Position(1, 1), const [Position(0, 1), Position(3, 2)]),
-        isFalse, // row conflict with (0,1)
+            puzzle, const Position(1, 1), const [Position(1, 3)]),
+        isFalse,
       );
+      // Column conflict: (2,1) vs (0,1) - same column 1
       expect(
         ConstraintEngine.isValidQueenPlacement(
             puzzle, const Position(2, 1), const [Position(0, 1)]),
-        isFalse, // column conflict
+        isFalse,
       );
+      // Region conflict: (0,0) vs (0,1) - both in region 0 (row 0)
       expect(
         ConstraintEngine.isValidQueenPlacement(
-            puzzle, const Position(3, 3), const [Position(0, 1)]),
-        isFalse, // region conflict (same region as (0,1))
+            puzzle, const Position(0, 0), const [Position(0, 1)]),
+        isFalse,
       );
+      // Adjacency conflict: (0,0) diagonally adjacent to (1,1)
       expect(
         ConstraintEngine.isValidQueenPlacement(
             puzzle, const Position(0, 0), const [Position(1, 1)]),
-        isFalse, // adjacency
+        isFalse,
       );
+      // Valid: (0,0) not conflicting with (1,3)
       expect(
         ConstraintEngine.isValidQueenPlacement(
             puzzle, const Position(0, 0), const [Position(1, 3)]),
@@ -145,12 +150,19 @@ void main() {
     });
 
     test('hasAdjacentQueen detects the eight neighbors', () {
+      // (3,3) is adjacent to (3,2) in solution
       expect(
         ConstraintEngine.hasAdjacentQueen(const Position(3, 3), solution),
-        isTrue, // (3,2) is adjacent
+        isTrue,
       );
+      // (2,3) is adjacent to (1,3) [vertical] and (3,2) [diagonal] in solution
       expect(
         ConstraintEngine.hasAdjacentQueen(const Position(2, 3), solution),
+        isTrue,
+      );
+      // Queen positions are not adjacent to other queens (by puzzle rules)
+      expect(
+        ConstraintEngine.hasAdjacentQueen(const Position(0, 1), solution),
         isFalse,
       );
     });

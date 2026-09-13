@@ -2,20 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:queens_game/game/achievements/achievement_service.dart';
 import 'package:queens_game/game/model/difficulty.dart';
 import 'package:queens_game/game/model/game_mode.dart';
+import 'package:queens_game/game/model/position.dart';
 import 'package:queens_game/game/model/puzzle.dart';
 import 'package:queens_game/game/scoring/scoring_service.dart';
 import 'package:queens_game/game/statistics/statistics_service.dart';
 import 'package:queens_game/game/streaks/streak_service.dart';
-
-DifficultyScore _easyScore() => const DifficultyScore(
-      humanScore: 10,
-      computationalScore: 5,
-      finalScore: 15,
-      difficulty: Difficulty.easy,
-      humanMetrics: DifficultyMetrics.empty(),
-      computationalMetrics: SolverMetrics.empty(),
-      solvedByDeduction: false,
-    );
 
 Puzzle _puzzle({Difficulty difficulty = Difficulty.easy, int size = 6}) {
   return Puzzle(
