@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:sudoku_game/models.dart';
 import 'package:sudoku_game/theme.dart';
 import 'package:sudoku_game/components/sudoku_board_widget.dart';
@@ -16,19 +17,35 @@ class GameScreen extends StatefulWidget {
   State<GameScreen> createState() => _GameScreenState();
 }
 
-class _GameScreenState extends State<GameScreen> {
+class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateMixin {
   late SudokuBoard _board;
   late Timer _timer;
   int _elapsedSeconds = 0;
   bool _notesMode = false;
   bool _gameComplete = false;
   int _hintsRemaining = 3;
+  int _errorCount = 0;
   final List<UndoEntry> _undoStack = [];
+  final FocusNode _focusNode = FocusNode();
+
+  // Shake animation for errors
+  late AnimationController _shakeController;
+  late Animation<double> _shakeAnimation;
 
   @override
   void initState() {
     super.initState();
+    _shakeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _shakeAnimation = Tween<double>(begin: 0, end: 1).animate(
+      CurvedAnimation(parent: _shakeController, curve: Curves.elasticOut),
+    );
     _startNewGame();
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _focusNode.requestFocus();
+    });
   }
 
   void _startNewGame() {
@@ -38,6 +55,7 @@ class _GameScreenState extends State<GameScreen> {
     _notesMode = false;
     _gameComplete = false;
     _hintsRemaining = 3;
+    _errorCount = 0;
     _undoStack.clear();
     _timer = Timer.periodic(const Duration(seconds: 1), _onTick);
   }
@@ -53,6 +71,9 @@ class _GameScreenState extends State<GameScreen> {
   @override
   void dispose() {
     _timer.cancel();
+    _errorFlashTimer?.cancel();
+    _shakeController.dispose();
+    _focusNode.dispose();
     super.dispose();
   }
 
@@ -75,45 +96,51 @@ class _GameScreenState extends State<GameScreen> {
     }
   }
 
+  // --- Cell interaction ---
+
   void _onCellTap(int row, int col) {
     if (_gameComplete) return;
     final cell = _board.cells[row][col];
-    if (cell.isOriginal) return;
-    _board.selectCell(row, col);
+    if (cell.isOriginal) {
+      // Select original cells too - allows seeing peers
+      _board.selectCell(row, col);
+    } else {
+      _board.selectCell(row, col);
+    }
+    _focusNode.requestFocus();
+    setState(() {});
   }
 
-  void _onNumberTap(int number) {
+  Timer? _errorFlashTimer;
+
+  void _placeNumber(int number) {
     if (_gameComplete) return;
     final selected = _findSelectedCell();
-    if (selected == null) return;
+    if (selected == null || selected.isOriginal) return;
 
     final row = selected.row;
     final col = selected.col;
-    final cell = _board.cells[row][col];
-
-    if (cell.isOriginal) return;
 
     if (_notesMode) {
       _undoStack.add(UndoEntry(
         row: row,
         col: col,
-        previousValue: cell.value,
-        previousNotes: Set<int>.from(cell.notes),
+        previousValue: selected.value,
+        previousNotes: Set<int>.from(selected.notes),
       ));
       _board.toggleNote(row, col, number);
     } else {
       _undoStack.add(UndoEntry(
         row: row,
         col: col,
-        previousValue: cell.value,
-        previousNotes: Set<int>.from(cell.notes),
+        previousValue: selected.value,
+        previousNotes: Set<int>.from(selected.notes),
       ));
       _board.setValue(row, col, number);
 
       if (_board.checkError(row, col)) {
-        _board.setError(row, col, true);
-      } else {
-        _board.setError(row, col, false);
+        _errorCount++;
+        _showErrorFlash(row, col);
       }
 
       if (_board.isComplete && !_gameComplete) {
@@ -125,7 +152,22 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
-  void _onErase() {
+  void _showErrorFlash(int row, int col) {
+    _shakeController.forward(from: 0);
+    HapticFeedback.mediumImpact();
+
+    // Brief red flash, then clear
+    _board.setError(row, col, true);
+    _errorFlashTimer?.cancel();
+    _errorFlashTimer = Timer(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        _board.setError(row, col, false);
+        setState(() {});
+      }
+    });
+  }
+
+  void _eraseCell() {
     if (_gameComplete) return;
     final selected = _findSelectedCell();
     if (selected == null || selected.isOriginal) return;
@@ -140,7 +182,7 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
-  void _onUndo() {
+  void _undoMove() {
     if (_gameComplete || _undoStack.isEmpty) return;
 
     final entry = _undoStack.removeLast();
@@ -161,13 +203,14 @@ class _GameScreenState extends State<GameScreen> {
     setState(() {});
   }
 
-  void _onNotesToggle() {
+  void _toggleNotes() {
     setState(() {
       _notesMode = !_notesMode;
     });
+    HapticFeedback.lightImpact();
   }
 
-  void _onHint() {
+  void _useHint() {
     if (_gameComplete || _hintsRemaining <= 0) return;
 
     final emptyCells = <(int, int)>[];
@@ -225,6 +268,85 @@ class _GameScreenState extends State<GameScreen> {
     return counts;
   }
 
+  // --- Keyboard handling ---
+
+  KeyEventResult _handleKeyEvent(FocusNode node, KeyEvent event) {
+    if (event is! KeyDownEvent && event is! KeyRepeatEvent) {
+      return KeyEventResult.ignored;
+    }
+
+    if (_gameComplete) return KeyEventResult.ignored;
+
+    final key = event.logicalKey;
+
+    // Number keys
+    if (key == LogicalKeyboardKey.digit1 || key == LogicalKeyboardKey.numpad1) {
+      _placeNumber(1);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit2 || key == LogicalKeyboardKey.numpad2) {
+      _placeNumber(2);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit3 || key == LogicalKeyboardKey.numpad3) {
+      _placeNumber(3);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit4 || key == LogicalKeyboardKey.numpad4) {
+      _placeNumber(4);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit5 || key == LogicalKeyboardKey.numpad5) {
+      _placeNumber(5);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit6 || key == LogicalKeyboardKey.numpad6) {
+      _placeNumber(6);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit7 || key == LogicalKeyboardKey.numpad7) {
+      _placeNumber(7);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit8 || key == LogicalKeyboardKey.numpad8) {
+      _placeNumber(8);
+      return KeyEventResult.handled;
+    }
+    if (key == LogicalKeyboardKey.digit9 || key == LogicalKeyboardKey.numpad9) {
+      _placeNumber(9);
+      return KeyEventResult.handled;
+    }
+
+    // Erase
+    if (key == LogicalKeyboardKey.delete ||
+        key == LogicalKeyboardKey.backspace) {
+      _eraseCell();
+      return KeyEventResult.handled;
+    }
+
+    // Notes toggle
+    if (key == LogicalKeyboardKey.keyN) {
+      _toggleNotes();
+      return KeyEventResult.handled;
+    }
+
+    // Undo
+    if (key == LogicalKeyboardKey.keyZ) {
+      _undoMove();
+      return KeyEventResult.handled;
+    }
+
+    // Hint
+    if (key == LogicalKeyboardKey.keyH) {
+      _useHint();
+      return KeyEventResult.handled;
+    }
+
+    return KeyEventResult.ignored;
+  }
+
+  // --- Dialogs ---
+
   void _showWinDialog() {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
@@ -243,7 +365,7 @@ class _GameScreenState extends State<GameScreen> {
               Container(
                 width: 72,
                 height: 72,
-                decoration: BoxDecoration(
+                decoration: const BoxDecoration(
                   color: AppColors.amberSoft,
                   shape: BoxShape.circle,
                 ),
@@ -262,19 +384,19 @@ class _GameScreenState extends State<GameScreen> {
                   color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
                 ),
               ),
-              const SizedBox(height: 8),
+              const SizedBox(height: 12),
               Text(
                 _formattedTime,
-                style: TextStyle(
-                  fontSize: 32,
+                style: const TextStyle(
+                  fontSize: 36,
                   fontWeight: FontWeight.w700,
                   color: AppColors.teal,
-                  fontFeatures: const [FontFeature.tabularFigures()],
+                  fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
               const SizedBox(height: 4),
               Text(
-                _difficultyLabel,
+                '$_difficultyLabel  \u00B7  $_errorCount errors',
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -292,8 +414,9 @@ class _GameScreenState extends State<GameScreen> {
                       },
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
-                          color:
-                              isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+                          color: isDark
+                              ? const Color(0xFF2D3040)
+                              : AppColors.gridThin,
                         ),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
@@ -303,8 +426,9 @@ class _GameScreenState extends State<GameScreen> {
                       child: Text(
                         'Home',
                         style: TextStyle(
-                          color:
-                              isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+                          color: isDark
+                              ? const Color(0xFFE5E7EB)
+                              : AppColors.ink,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -341,6 +465,8 @@ class _GameScreenState extends State<GameScreen> {
     );
   }
 
+  // --- Build ---
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -366,15 +492,14 @@ class _GameScreenState extends State<GameScreen> {
             padding: const EdgeInsets.only(right: 20),
             child: Center(
               child: Container(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
                   color: isDark ? const Color(0xFF252830) : AppColors.paper,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
-                    color: isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+                    color: isDark
+                        ? const Color(0xFF2D3040)
+                        : AppColors.gridThin,
                     width: 1,
                   ),
                 ),
@@ -392,94 +517,120 @@ class _GameScreenState extends State<GameScreen> {
           ),
         ],
       ),
-      body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 24),
-          child: Column(
-            children: [
-              const SizedBox(height: 4),
-              // Progress
-              ClipRRect(
-                borderRadius: BorderRadius.circular(2),
-                child: LinearProgressIndicator(
-                  value: progress,
-                  backgroundColor:
-                      isDark ? const Color(0xFF252830) : AppColors.gridThin,
-                  valueColor:
-                      const AlwaysStoppedAnimation<Color>(AppColors.teal),
-                  minHeight: 3,
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Board
-              Flexible(
-                child: SudokuBoardWidget(
-                  board: _board,
-                  onCellTap: _onCellTap,
-                ),
-              ),
-              const SizedBox(height: 14),
-              // Hint
-              GestureDetector(
-                onTap: _onHint,
-                child: AnimatedContainer(
-                  duration: const Duration(milliseconds: 150),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 18,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: _hintsRemaining > 0
-                        ? AppColors.amberSoft
-                        : (isDark
-                            ? const Color(0xFF252830)
-                            : AppColors.gridThin.withValues(alpha: 0.3)),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: _hintsRemaining > 0
-                          ? AppColors.amber.withValues(alpha: 0.4)
-                          : (isDark
-                              ? const Color(0xFF2D3040)
-                              : AppColors.gridThin),
+      body: Focus(
+        focusNode: _focusNode,
+        onKeyEvent: _handleKeyEvent,
+        child: GestureDetector(
+          onTap: () => _focusNode.requestFocus(),
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 24),
+              child: Column(
+                children: [
+                  const SizedBox(height: 4),
+                  // Progress
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(2),
+                    child: LinearProgressIndicator(
+                      value: progress,
+                      backgroundColor: isDark
+                          ? const Color(0xFF252830)
+                          : AppColors.gridThin,
+                      valueColor:
+                          const AlwaysStoppedAnimation<Color>(AppColors.teal),
+                      minHeight: 3,
                     ),
                   ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.lightbulb_rounded,
-                        size: 15,
-                        color: _hintsRemaining > 0
-                            ? AppColors.amber
-                            : (isDark ? AppColors.slate : AppColors.muted),
+                  const SizedBox(height: 14),
+                  // Board
+                  Flexible(
+                    child: AnimatedBuilder(
+                      animation: _shakeAnimation,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(
+                            _shakeController.isAnimating
+                                ? (1 - _shakeAnimation.value) *
+                                    4 *
+                                    ((_shakeController.value * 6).toInt().isEven
+                                        ? 1
+                                        : -1)
+                                : 0,
+                            0,
+                          ),
+                          child: child,
+                        );
+                      },
+                      child: SudokuBoardWidget(
+                        board: _board,
+                        onCellTap: _onCellTap,
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        'Hints: $_hintsRemaining',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  // Hint
+                  GestureDetector(
+                    onTap: _useHint,
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 150),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 18, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: _hintsRemaining > 0
+                            ? AppColors.amberSoft
+                            : (isDark
+                                ? const Color(0xFF252830)
+                                : AppColors.gridThin.withValues(alpha: 0.3)),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
                           color: _hintsRemaining > 0
-                              ? AppColors.amber
-                              : (isDark ? AppColors.slate : AppColors.muted),
+                              ? AppColors.amber.withValues(alpha: 0.4)
+                              : (isDark
+                                  ? const Color(0xFF2D3040)
+                                  : AppColors.gridThin),
                         ),
                       ),
-                    ],
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.lightbulb_rounded,
+                            size: 15,
+                            color: _hintsRemaining > 0
+                                ? AppColors.amber
+                                : (isDark ? AppColors.slate : AppColors.muted),
+                          ),
+                          const SizedBox(width: 6),
+                          Text(
+                            'Hints: $_hintsRemaining',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                              color: _hintsRemaining > 0
+                                  ? AppColors.amber
+                                  : (isDark
+                                      ? AppColors.slate
+                                      : AppColors.muted),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 14),
+                  // Number pad
+                  NumberPad(
+                    onNumberTap: _placeNumber,
+                    onErase: _eraseCell,
+                    onUndo: _undoMove,
+                    onNotesToggle: _toggleNotes,
+                    notesMode: _notesMode,
+                    numberCounts: _getNumberCounts(),
+                  ),
+                  const SizedBox(height: 8),
+                ],
               ),
-              const SizedBox(height: 14),
-              // Number pad
-              NumberPad(
-                onNumberTap: _onNumberTap,
-                onErase: _onErase,
-                onUndo: _onUndo,
-                onNotesToggle: _onNotesToggle,
-                notesMode: _notesMode,
-                numberCounts: _getNumberCounts(),
-              ),
-              const SizedBox(height: 8),
-            ],
+            ),
           ),
         ),
       ),

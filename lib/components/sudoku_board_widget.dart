@@ -17,6 +17,22 @@ class SudokuBoardWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
+    // Find selected cell info
+    int selectedRow = -1;
+    int selectedCol = -1;
+    int selectedValue = 0;
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 9; c++) {
+        if (board.cells[r][c].isSelected) {
+          selectedRow = r;
+          selectedCol = c;
+          selectedValue = board.cells[r][c].value;
+        }
+      }
+    }
+
+    final selectedBox = selectedRow >= 0 ? (selectedRow ~/ 3) * 3 + (selectedCol ~/ 3) : -1;
+
     return LayoutBuilder(
       builder: (context, constraints) {
         final boardSize = constraints.maxWidth;
@@ -52,7 +68,14 @@ class SudokuBoardWidget extends StatelessWidget {
                   child: Row(
                     children: List.generate(3, (boxCol) {
                       return Expanded(
-                        child: _buildBox(boxRow, boxCol),
+                        child: _buildBox(
+                          boxRow,
+                          boxCol,
+                          selectedRow,
+                          selectedCol,
+                          selectedBox,
+                          selectedValue,
+                        ),
                       );
                     }),
                   ),
@@ -65,7 +88,16 @@ class SudokuBoardWidget extends StatelessWidget {
     );
   }
 
-  Widget _buildBox(int boxRow, int boxCol) {
+  Widget _buildBox(
+    int boxRow,
+    int boxCol,
+    int selectedRow,
+    int selectedCol,
+    int selectedBox,
+    int selectedValue,
+  ) {
+    final thisBox = boxRow * 3 + boxCol;
+
     return Column(
       children: List.generate(3, (localRow) {
         return Expanded(
@@ -75,11 +107,19 @@ class SudokuBoardWidget extends StatelessWidget {
               final col = boxCol * 3 + localCol;
               final cell = board.cells[row][col];
 
+              final isPeer = selectedRow >= 0 &&
+                  (row == selectedRow || col == selectedCol || thisBox == selectedBox);
+              final isSameNumber = selectedValue > 0 &&
+                  cell.value == selectedValue &&
+                  !cell.isSelected;
+
               return SudokuCellWidget(
                 cell: cell,
                 onTap: () => onCellTap(row, col),
                 boxRow: localRow,
                 boxCol: localCol,
+                isPeer: isPeer && !cell.isSelected,
+                isSameNumber: isSameNumber,
               );
             }),
           ),
