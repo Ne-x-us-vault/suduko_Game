@@ -1,7 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Represents a single cell in the Sudoku board
+enum Difficulty { easy, medium, hard, expert }
+
 class SudokuCell {
   final int row;
   final int col;
@@ -10,6 +11,7 @@ class SudokuCell {
   bool isSelected;
   bool isHint;
   bool isError;
+  Set<int> notes;
 
   SudokuCell({
     required this.row,
@@ -19,11 +21,13 @@ class SudokuCell {
     this.isSelected = false,
     this.isHint = false,
     this.isError = false,
-  });
+    Set<int>? notes,
+  }) : notes = notes ?? {};
 
-  get isFilled => value != 0;
-  get isEmpty => value == 0;
-  get isValidNumber => value >= 1 && value <= 9;
+  bool get isFilled => value != 0;
+  bool get isEmpty => value == 0;
+  bool get isValidNumber => value >= 1 && value <= 9;
+  bool get hasNotes => notes.isNotEmpty;
 
   SudokuCell copyWith({
     int? value,
@@ -31,6 +35,7 @@ class SudokuCell {
     bool? isHint,
     bool? isError,
     bool? isOriginal,
+    Set<int>? notes,
   }) {
     return SudokuCell(
       row: row,
@@ -40,14 +45,18 @@ class SudokuCell {
       isSelected: isSelected ?? this.isSelected,
       isHint: isHint ?? this.isHint,
       isError: isError ?? this.isError,
+      notes: notes ?? Set<int>.from(this.notes),
     );
   }
 }
 
-/// Represents the Sudoku board state
 class SudokuBoard extends ChangeNotifier {
-  final int size = 9;
-  List<List<SudokuCell>> cells = List.generate(9, (_) => List.filled(9, SudokuCell(row: 0, col: 0)));
+  static const int size = 9;
+  List<List<SudokuCell>> cells = List.generate(
+    9,
+    (_) => List.filled(9, SudokuCell(row: 0, col: 0)),
+  );
+  List<List<int>> _solution = List.generate(9, (_) => List.filled(9, 0));
 
   SudokuBoard._internal();
 
@@ -57,14 +66,18 @@ class SudokuBoard extends ChangeNotifier {
     return board;
   }
 
-  factory SudokuBoard.fromPuzzle(List<List<int>> puzzle) {
+  factory SudokuBoard.fromPuzzle(List<List<int>> puzzle, List<List<int>> solution) {
     final board = SudokuBoard.create();
+    board._solution = solution;
     board._applyPuzzle(puzzle);
     return board;
   }
 
   void _initializeBoard() {
-    cells = List.generate(9, (r) => List.generate(9, (c) => SudokuCell(row: r, col: c)));
+    cells = List.generate(
+      9,
+      (r) => List.generate(9, (c) => SudokuCell(row: r, col: c)),
+    );
     notifyListeners();
   }
 
@@ -72,7 +85,12 @@ class SudokuBoard extends ChangeNotifier {
     for (int r = 0; r < 9; r++) {
       for (int c = 0; c < 9; c++) {
         if (puzzle[r][c] != 0) {
-          cells[r][c] = SudokuCell(row: r, col: c, value: puzzle[r][c], isOriginal: true);
+          cells[r][c] = SudokuCell(
+            row: r,
+            col: c,
+            value: puzzle[r][c],
+            isOriginal: true,
+          );
         }
       }
     }
@@ -80,8 +98,37 @@ class SudokuBoard extends ChangeNotifier {
   }
 
   int getValue(int row, int col) => cells[row][col].value;
-  setValue(int row, int col, int value) {
-    cells[row][col] = cells[row][col].copyWith(value: value);
+
+  int getSolutionValue(int row, int col) => _solution[row][col];
+
+  void setValue(int row, int col, int value) {
+    cells[row][col] = cells[row][col].copyWith(
+      value: value,
+      isError: false,
+      notes: {},
+    );
+    notifyListeners();
+  }
+
+  void toggleNote(int row, int col, int number) {
+    final cell = cells[row][col];
+    if (cell.isFilled) return;
+    final newNotes = Set<int>.from(cell.notes);
+    if (newNotes.contains(number)) {
+      newNotes.remove(number);
+    } else {
+      newNotes.add(number);
+    }
+    cells[row][col] = cell.copyWith(notes: newNotes);
+    notifyListeners();
+  }
+
+  void clearCell(int row, int col) {
+    cells[row][col] = cells[row][col].copyWith(
+      value: 0,
+      isError: false,
+      notes: {},
+    );
     notifyListeners();
   }
 
@@ -94,9 +141,19 @@ class SudokuBoard extends ChangeNotifier {
     notifyListeners();
   }
 
-  void toggleHint(int row, int col) {
-    cells[row][col] = cells[row][col].copyWith(isHint: !cells[row][col].isHint);
+  void clearSelection() {
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 9; c++) {
+        cells[r][c] = cells[r][c].copyWith(isSelected: false);
+      }
+    }
     notifyListeners();
+  }
+
+  bool checkError(int row, int col) {
+    final value = cells[row][col].value;
+    if (value == 0) return false;
+    return value != _solution[row][col];
   }
 
   void setError(int row, int col, bool isError) {
@@ -122,7 +179,6 @@ class SudokuBoard extends ChangeNotifier {
         if (v != 0) rowNums.add(v);
       }
     }
-
     for (int c = 0; c < 9; c++) {
       final Set<int> colNums = {};
       for (int r = 0; r < 9; r++) {
@@ -131,7 +187,6 @@ class SudokuBoard extends ChangeNotifier {
         if (v != 0) colNums.add(v);
       }
     }
-
     for (int br = 0; br < 3; br++) {
       for (int bc = 0; bc < 3; bc++) {
         final Set<int> boxNums = {};
@@ -147,11 +202,21 @@ class SudokuBoard extends ChangeNotifier {
     return true;
   }
 
+  int get filledCount {
+    int count = 0;
+    for (int r = 0; r < 9; r++) {
+      for (int c = 0; c < 9; c++) {
+        if (cells[r][c].isFilled) count++;
+      }
+    }
+    return count;
+  }
+
   List<List<int>> getPuzzle() {
     final puzzle = List.generate(9, (i) => List.filled(9, 0));
     for (int r = 0; r < 9; r++) {
       for (int c = 0; c < 9; c++) {
-        if (cells[r][c].isOriginal || cells[r][c].value != 0) {
+        if (cells[r][c].isOriginal) {
           puzzle[r][c] = cells[r][c].value;
         }
       }
@@ -160,7 +225,6 @@ class SudokuBoard extends ChangeNotifier {
   }
 }
 
-/// Game statistics and streak tracking
 class GameStats extends ChangeNotifier {
   static const String _key = 'sudoku_stats';
 
@@ -200,24 +264,26 @@ class GameStats extends ChangeNotifier {
     prefs.setInt('${_key}_won', gamesWon);
     prefs.setInt('${_key}_streak', currentStreak);
     prefs.setInt('${_key}_maxstreak', maxStreak);
-    lastPlayed != null
-        ? prefs.setString('${_key}_lastplayed', lastPlayed!.toIso8601String())
-        : prefs.remove('${_key}_lastplayed');
+    if (lastPlayed != null) {
+      prefs.setString('${_key}_lastplayed', lastPlayed!.toIso8601String());
+    } else {
+      prefs.remove('${_key}_lastplayed');
+    }
     prefs.setInt('${_key}_hints', hintsUsed);
     prefs.setInt('${_key}_errors', errorsMade);
     notifyListeners();
   }
 
   void startNewGame() {
+    totalGamesPlayed++;
     currentStreak++;
-    if (currentStreak > maxStreak) {
-      maxStreak = currentStreak;
-    }
+    if (currentStreak > maxStreak) maxStreak = currentStreak;
+    lastPlayed = DateTime.now();
+    save();
     notifyListeners();
   }
 
   void endGame({required bool won}) {
-    totalGamesPlayed++;
     if (won) {
       gamesWon++;
     } else {
@@ -229,11 +295,13 @@ class GameStats extends ChangeNotifier {
 
   void useHint() {
     hintsUsed++;
+    save();
     notifyListeners();
   }
 
   void makeError() {
     errorsMade++;
+    save();
     notifyListeners();
   }
 
@@ -243,5 +311,16 @@ class GameStats extends ChangeNotifier {
   }
 }
 
-/// Enum for game difficulty levels
-enum Difficulty { easy, medium, hard, expert }
+class UndoEntry {
+  final int row;
+  final int col;
+  final int previousValue;
+  final Set<int> previousNotes;
+
+  UndoEntry({
+    required this.row,
+    required this.col,
+    required this.previousValue,
+    required this.previousNotes,
+  });
+}

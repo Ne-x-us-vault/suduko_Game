@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:sudoku_game/models.dart';
 import 'package:sudoku_game/theme.dart';
-
-enum Difficulty { easy, medium, hard, expert }
+import 'package:sudoku_game/screens/game_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,15 +12,13 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   Difficulty _selectedDifficulty = Difficulty.medium;
-  bool _hasUnfinishedPuzzle = false;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Gridline Sudoku'),
+        title: const Text(''),
         backgroundColor: Colors.transparent,
-        foregroundColor: AppColors.graphite,
         elevation: 0,
       ),
       body: SafeArea(
@@ -29,23 +27,23 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SizedBox(height: 40),
+              const SizedBox(height: 20),
               _buildHeader(),
               const SizedBox(height: 32),
               _buildDifficultySelector(),
               const SizedBox(height: 24),
               _buildActionButtons(),
-              const SizedBox(height: 24),
-              _buildStatsRow(),
               const Spacer(),
-              const Text(
-                'Calm. Focused. Complete.',
-                style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF6B6B6B),
+              Center(
+                child: Text(
+                  'Calm. Focused. Complete.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.graphite.withValues(alpha: 0.4),
+                  ),
                 ),
               ),
-              const SizedBox(height: 40),
+              const SizedBox(height: 24),
             ],
           ),
         ),
@@ -59,7 +57,7 @@ class _HomeScreenState extends State<HomeScreen> {
         Container(
           padding: const EdgeInsets.all(12),
           decoration: BoxDecoration(
-            color: AppColors.teal.withOpacity(0.1),
+            color: AppColors.teal.withValues(alpha: 0.1),
             borderRadius: BorderRadius.circular(12),
           ),
           child: const Icon(
@@ -121,19 +119,26 @@ class _HomeScreenState extends State<HomeScreen> {
             children: Difficulty.values.map((diff) {
               final isSelected = diff == _selectedDifficulty;
               return FilterChip(
-                label: Text(_difficultyLabel(diff),
-                    style: TextStyle(
-                      color: isSelected ? Colors.white : AppColors.graphite,
-                      fontSize: 12,
-                    )),
+                label: Text(
+                  _difficultyLabel(diff),
+                  style: TextStyle(
+                    color: isSelected ? Colors.white : AppColors.graphite,
+                    fontSize: 12,
+                  ),
+                ),
                 selected: isSelected,
                 onSelected: (_) {
                   setState(() => _selectedDifficulty = diff);
                 },
                 selectedColor: AppColors.teal,
                 backgroundColor: AppColors.cellSurface,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 6,
+                ),
               );
             }).toList(),
           ),
@@ -164,7 +169,10 @@ class _HomeScreenState extends State<HomeScreen> {
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.teal,
               foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              padding: const EdgeInsets.symmetric(
+                horizontal: 24,
+                vertical: 16,
+              ),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(12),
               ),
@@ -172,113 +180,14 @@ class _HomeScreenState extends State<HomeScreen> {
             child: const Text('New Game'),
           ),
         ),
-        const SizedBox(width: 12),
-        Expanded(
-          child: ElevatedButton(
-            onPressed: _hasUnfinishedPuzzle ? _continueGame : null,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: _hasUnfinishedPuzzle ? AppColors.graphite : AppColors.gridLine,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('Continue'),
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatsRow() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _StatCard(
-          icon: Icons.star,
-          label: 'Streak',
-          value: 'Streak: 0',
-          color: AppColors.gold,
-        ),
-        _StatCard(
-          icon: Icons.history,
-          label: 'Games',
-          value: '0 played',
-          color: AppColors.teal,
-        ),
-        _StatCard(
-          icon: Icons.watch_later,
-          label: 'Daily',
-          value: 'Available',
-          color: AppColors.coral,
-        ),
       ],
     );
   }
 
   void _startNewGame(Difficulty difficulty) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Starting game')),
-    );
-  }
-
-  void _continueGame() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Continuing puzzle')),
-    );
-  }
-}
-
-class _StatCard extends StatelessWidget {
-  final IconData icon;
-  final String label;
-  final String value;
-  final Color color;
-
-  _StatCard({
-    required IconData icon,
-    required String label,
-    required String value,
-    required Color color,
-    Key? key,
-  })  : icon = icon,
-        label = label,
-        value = value,
-        color = color,
-        super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withOpacity(0.3)),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 4),
-          Text(
-            value,
-            style: const TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w500,
-              color: Color(0xFFFFFFFF),
-            ),
-          ),
-          const SizedBox(height: 2),
-          Text(
-            label,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Color(0xFF6B6B6B),
-            ),
-          ),
-        ],
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => GameScreen(difficulty: difficulty),
       ),
     );
   }
