@@ -1,106 +1,115 @@
 import 'package:flutter/material.dart';
 
-/// Color palette for Gridline Sudoku
 class AppColors {
-  static const Color ivory = Color(0xFFFFF8E7);
-  static const Color graphite = Color(0xFF2A2A2E);
-  static const Color teal = Color(0xFF006D77);
-  static const Color coral = Color(0xFFF08080);
-  static const Color gold = Color(0xFFFFD700);
-  static const Color gridLine = Color(0xFFB0B0B0);
-  static const Color cellSurface = Color(0xFFFFFFFF);
-  static const Color errorBackground = Color(0xFFFFF0F0);
-  static const Color errorText = Color(0xFFFF0000);
+  static const Color cream = Color(0xFFF7F5F0);
+  static const Color paper = Color(0xFFFDFCFA);
+  static const Color ink = Color(0xFF1B1F2B);
+  static const Color inkLight = Color(0xFF3D4255);
+  static const Color slate = Color(0xFF6B7280);
+  static const Color muted = Color(0xFF9CA3AF);
+  static const Color teal = Color(0xFF0E7C6B);
+  static const Color tealSoft = Color(0xFFD1FAE5);
+  static const Color amber = Color(0xFFD97706);
+  static const Color amberSoft = Color(0xFFFEF3C7);
+  static const Color rose = Color(0xFFE11D48);
+  static const Color roseSoft = Color(0xFFFEE2E2);
+  static const Color gridThick = Color(0xFF1B1F2B);
+  static const Color gridThin = Color(0xFFD1D5DB);
+  static const Color cellUser = Color(0xFFFFFFFF);
+  static const Color cellOriginal = Color(0xFFF0F4F8);
+  static const Color cellSelected = Color(0xFFD1FAE5);
+  static const Color cellSameNumber = Color(0xFFECFDF5);
+  static const Color cellError = Color(0xFFFEE2E2);
+  static const Color cellHint = Color(0xFFFEF3C7);
 }
 
-/// Light theme data
 ThemeData lightTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
-    surface: AppColors.ivory,
+    surface: AppColors.cream,
     primary: AppColors.teal,
     onPrimary: Colors.white,
-    secondary: AppColors.gold,
-    onSecondary: AppColors.graphite,
-    error: AppColors.coral,
+    secondary: AppColors.amber,
+    onSecondary: AppColors.ink,
+    error: AppColors.rose,
     onError: Colors.white,
     surfaceTint: AppColors.teal,
   ),
-  textTheme: TextTheme(
+  textTheme: const TextTheme(
     displayLarge: TextStyle(
-      fontSize: 32,
-      fontWeight: FontWeight.w300,
-      color: AppColors.graphite,
-      letterSpacing: -0.5,
+      fontSize: 34,
+      fontWeight: FontWeight.w700,
+      color: AppColors.ink,
+      letterSpacing: -1.2,
+      height: 1.1,
     ),
     headlineMedium: TextStyle(
       fontSize: 20,
-      fontWeight: FontWeight.w500,
-      color: AppColors.graphite,
-      letterSpacing: -0.3,
+      fontWeight: FontWeight.w600,
+      color: AppColors.ink,
+      letterSpacing: -0.4,
     ),
     titleLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
-      color: AppColors.graphite,
-      letterSpacing: 0.15,
+      color: AppColors.ink,
+      letterSpacing: 0.1,
     ),
     bodyLarge: TextStyle(
-      fontSize: 14,
-      color: AppColors.graphite,
+      fontSize: 15,
+      color: AppColors.inkLight,
       height: 1.5,
     ),
     bodyMedium: TextStyle(
-      fontSize: 12,
-      color: AppColors.graphite,
+      fontSize: 13,
+      color: AppColors.slate,
       height: 1.4,
     ),
     labelLarge: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
       color: Colors.white,
+      letterSpacing: 0.2,
     ),
   ),
-  scaffoldBackgroundColor: AppColors.ivory,
+  scaffoldBackgroundColor: AppColors.cream,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
-    foregroundColor: AppColors.graphite,
+    foregroundColor: AppColors.ink,
     elevation: 0,
+    scrolledUnderElevation: 0,
     titleTextStyle: TextStyle(
-      fontSize: 24,
-      fontWeight: FontWeight.w300,
-      color: AppColors.graphite,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: AppColors.ink,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor: WidgetStatePropertyAll(AppColors.teal),
       foregroundColor: WidgetStatePropertyAll(Colors.white),
-      padding: WidgetStatePropertyAll(const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-    ),
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: AppColors.cellSurface,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.gridLine),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.gridLine),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.teal, width: 2),
+      elevation: const WidgetStatePropertyAll(2),
+      padding: WidgetStatePropertyAll(
+        const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+      ),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      textStyle: const WidgetStatePropertyAll(
+        TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
+        ),
+      ),
     ),
   ),
   cardTheme: CardThemeData(
-    color: AppColors.cellSurface,
-    elevation: 2,
+    color: AppColors.paper,
+    elevation: 0,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    surfaceTintColor: Colors.transparent,
   ),
 );
 
@@ -108,88 +117,88 @@ ThemeData darkTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
-    surface: AppColors.graphite,
+    surface: Color(0xFF12141A),
     primary: AppColors.teal,
     onPrimary: Colors.white,
-    secondary: AppColors.gold,
-    onSecondary: AppColors.graphite,
-    error: AppColors.coral,
+    secondary: AppColors.amber,
+    onSecondary: Colors.white,
+    error: AppColors.rose,
     onError: Colors.white,
     surfaceTint: AppColors.teal,
   ),
-  textTheme: TextTheme(
+  textTheme: const TextTheme(
     displayLarge: TextStyle(
-      fontSize: 32,
-      fontWeight: FontWeight.w300,
-      color: AppColors.ivory,
-      letterSpacing: -0.5,
+      fontSize: 34,
+      fontWeight: FontWeight.w700,
+      color: Color(0xFFE5E7EB),
+      letterSpacing: -1.2,
+      height: 1.1,
     ),
     headlineMedium: TextStyle(
       fontSize: 20,
-      fontWeight: FontWeight.w500,
-      color: AppColors.ivory,
-      letterSpacing: -0.3,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFFE5E7EB),
+      letterSpacing: -0.4,
     ),
     titleLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
-      color: AppColors.ivory,
-      letterSpacing: 0.15,
+      color: Color(0xFFE5E7EB),
+      letterSpacing: 0.1,
     ),
     bodyLarge: TextStyle(
-      fontSize: 14,
-      color: AppColors.ivory,
+      fontSize: 15,
+      color: Color(0xFFD1D5DB),
       height: 1.5,
     ),
     bodyMedium: TextStyle(
-      fontSize: 12,
-      color: AppColors.ivory,
+      fontSize: 13,
+      color: Color(0xFF9CA3AF),
       height: 1.4,
     ),
     labelLarge: TextStyle(
-      fontSize: 13,
-      fontWeight: FontWeight.w500,
-      color: AppColors.teal,
+      fontSize: 14,
+      fontWeight: FontWeight.w600,
+      color: Colors.white,
+      letterSpacing: 0.2,
     ),
   ),
-  scaffoldBackgroundColor: AppColors.graphite,
+  scaffoldBackgroundColor: const Color(0xFF12141A),
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
-    foregroundColor: AppColors.ivory,
+    foregroundColor: Color(0xFFE5E7EB),
     elevation: 0,
+    scrolledUnderElevation: 0,
     titleTextStyle: TextStyle(
-      fontSize: 24,
-      fontWeight: FontWeight.w300,
-      color: AppColors.ivory,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      color: Color(0xFFE5E7EB),
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
       backgroundColor: WidgetStatePropertyAll(AppColors.teal),
       foregroundColor: WidgetStatePropertyAll(Colors.white),
-      padding: WidgetStatePropertyAll(const EdgeInsets.symmetric(horizontal: 24, vertical: 12)),
-      shape: WidgetStatePropertyAll(RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-    ),
-  ),
-  inputDecorationTheme: InputDecorationTheme(
-    filled: true,
-    fillColor: AppColors.cellSurface,
-    border: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.gridLine),
-    ),
-    enabledBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.gridLine),
-    ),
-    focusedBorder: OutlineInputBorder(
-      borderRadius: BorderRadius.circular(12),
-      borderSide: BorderSide(color: AppColors.teal, width: 2),
+      elevation: const WidgetStatePropertyAll(2),
+      padding: WidgetStatePropertyAll(
+        const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+      ),
+      shape: WidgetStatePropertyAll(
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      textStyle: const WidgetStatePropertyAll(
+        TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.2,
+        ),
+      ),
     ),
   ),
   cardTheme: CardThemeData(
-    color: AppColors.cellSurface,
-    elevation: 2,
+    color: const Color(0xFF1E2028),
+    elevation: 0,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    surfaceTintColor: Colors.transparent,
   ),
 );

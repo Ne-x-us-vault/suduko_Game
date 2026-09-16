@@ -15,36 +15,57 @@ class SudokuBoardWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final boardSize = screenWidth - 48 - 16;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
-      width: boardSize,
-      height: boardSize,
-      decoration: BoxDecoration(
-        border: Border.all(
-          color: AppColors.gridLine,
-          width: 2.5,
-        ),
-        borderRadius: BorderRadius.circular(4),
-      ),
-      child: Column(
-        children: List.generate(3, (boxRow) {
-          return Expanded(
-            child: Row(
-              children: List.generate(3, (boxCol) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final boardSize = constraints.maxWidth;
+        return Container(
+          width: boardSize,
+          height: boardSize,
+          decoration: BoxDecoration(
+            color: isDark ? const Color(0xFF1A1D26) : AppColors.paper,
+            border: Border.all(
+              color: isDark ? const Color(0xFF3D4255) : AppColors.gridThick,
+              width: 3.0,
+            ),
+            borderRadius: BorderRadius.circular(6),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
+                blurRadius: 20,
+                offset: const Offset(0, 4),
+                spreadRadius: -2,
+              ),
+              BoxShadow(
+                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
+                blurRadius: 4,
+                offset: const Offset(0, 1),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(3),
+            child: Column(
+              children: List.generate(3, (boxRow) {
                 return Expanded(
-                  child: _buildBox(context, boxRow, boxCol),
+                  child: Row(
+                    children: List.generate(3, (boxCol) {
+                      return Expanded(
+                        child: _buildBox(boxRow, boxCol),
+                      );
+                    }),
+                  ),
                 );
               }),
             ),
-          );
-        }),
-      ),
+          ),
+        );
+      },
     );
   }
 
-  Widget _buildBox(BuildContext context, int boxRow, int boxCol) {
+  Widget _buildBox(int boxRow, int boxCol) {
     return Column(
       children: List.generate(3, (localRow) {
         return Expanded(

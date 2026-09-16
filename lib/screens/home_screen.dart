@@ -15,76 +15,90 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(''),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-      ),
       body: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 20),
-              _buildHeader(),
-              const SizedBox(height: 32),
-              _buildDifficultySelector(),
-              const SizedBox(height: 24),
-              _buildActionButtons(),
-              const Spacer(),
-              Center(
-                child: Text(
-                  'Calm. Focused. Complete.',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: AppColors.graphite.withValues(alpha: 0.4),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-            ],
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 28),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const SizedBox(height: 56),
+                _buildLogo(isDark),
+                const SizedBox(height: 48),
+                _buildSectionLabel('DIFFICULTY', isDark),
+                const SizedBox(height: 14),
+                _buildDifficultyGrid(isDark),
+                const SizedBox(height: 32),
+                _buildStartButton(isDark),
+                const SizedBox(height: 48),
+                _buildInfoSection(isDark),
+                const SizedBox(height: 56),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _buildHeader() {
+  Widget _buildLogo(bool isDark) {
     return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          padding: const EdgeInsets.all(12),
+          width: 52,
+          height: 52,
           decoration: BoxDecoration(
-            color: AppColors.teal.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          child: const Icon(
-            Icons.grid_on,
-            size: 40,
             color: AppColors.teal,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.teal.withValues(alpha: 0.3),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: const Center(
+            child: Text(
+              '#',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: Colors.white,
+                height: 1,
+              ),
+            ),
           ),
         ),
         const SizedBox(width: 16),
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              const SizedBox(height: 2),
               Text(
-                'Gridline Sudoku',
+                'Gridline',
                 style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w300,
-                  color: AppColors.graphite,
-                  letterSpacing: -1,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w700,
+                  color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+                  letterSpacing: -1.2,
+                  height: 1.1,
                 ),
               ),
+              const SizedBox(height: 4),
               Text(
-                'Calm. Focused. Complete.',
+                'Sudoku',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: AppColors.graphite,
+                  fontSize: 32,
+                  fontWeight: FontWeight.w300,
+                  color: isDark ? AppColors.slate : AppColors.muted,
+                  letterSpacing: -0.5,
+                  height: 1.1,
                 ),
               ),
             ],
@@ -94,100 +108,211 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildDifficultySelector() {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: AppColors.cellSurface,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.gridLine),
+  Widget _buildSectionLabel(String text, bool isDark) {
+    return Text(
+      text,
+      style: TextStyle(
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 1.2,
+        color: isDark ? AppColors.slate : AppColors.muted,
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Difficulty',
-            style: TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-              color: AppColors.graphite,
+    );
+  }
+
+  Widget _buildDifficultyGrid(bool isDark) {
+    return Column(
+      children: [
+        Row(
+          children: [
+            _buildDifficultyCard(Difficulty.easy, 'Easy', '15 min', isDark),
+            const SizedBox(width: 12),
+            _buildDifficultyCard(Difficulty.medium, 'Medium', '25 min', isDark),
+          ],
+        ),
+        const SizedBox(height: 12),
+        Row(
+          children: [
+            _buildDifficultyCard(Difficulty.hard, 'Hard', '40 min', isDark),
+            const SizedBox(width: 12),
+            _buildDifficultyCard(
+                Difficulty.expert, 'Expert', '60+ min', isDark),
+          ],
+        ),
+      ],
+    );
+  }
+
+  Widget _buildDifficultyCard(
+    Difficulty difficulty,
+    String label,
+    String time,
+    bool isDark,
+  ) {
+    final isSelected = _selectedDifficulty == difficulty;
+
+    return Expanded(
+      child: GestureDetector(
+        onTap: () => setState(() => _selectedDifficulty = difficulty),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 150),
+          curve: Curves.easeOut,
+          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+          decoration: BoxDecoration(
+            color: isSelected
+                ? AppColors.teal
+                : (isDark ? const Color(0xFF1E2028) : AppColors.paper),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isSelected
+                  ? AppColors.teal
+                  : (isDark ? const Color(0xFF2D3040) : AppColors.gridThin),
+              width: isSelected ? 2 : 1,
             ),
+            boxShadow: isSelected
+                ? [
+                    BoxShadow(
+                      color: AppColors.teal.withValues(alpha: 0.25),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ]
+                : [
+                    BoxShadow(
+                      color: Colors.black
+                          .withValues(alpha: isDark ? 0.15 : 0.04),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
           ),
-          const SizedBox(height: 12),
-          Wrap(
-            spacing: 8,
-            children: Difficulty.values.map((diff) {
-              final isSelected = diff == _selectedDifficulty;
-              return FilterChip(
-                label: Text(
-                  _difficultyLabel(diff),
-                  style: TextStyle(
-                    color: isSelected ? Colors.white : AppColors.graphite,
-                    fontSize: 12,
-                  ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: isSelected
+                      ? Colors.white
+                      : (isDark ? const Color(0xFFE5E7EB) : AppColors.ink),
                 ),
-                selected: isSelected,
-                onSelected: (_) {
-                  setState(() => _selectedDifficulty = diff);
-                },
-                selectedColor: AppColors.teal,
-                backgroundColor: AppColors.cellSurface,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(20),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                time,
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.w500,
+                  color: isSelected
+                      ? Colors.white.withValues(alpha: 0.7)
+                      : (isDark ? AppColors.slate : AppColors.muted),
                 ),
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 6,
-                ),
-              );
-            }).toList(),
+              ),
+            ],
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildStartButton(bool isDark) {
+    return SizedBox(
+      width: double.infinity,
+      child: ElevatedButton(
+        onPressed: () => _startNewGame(_selectedDifficulty),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.teal,
+          foregroundColor: Colors.white,
+          elevation: 4,
+          shadowColor: AppColors.teal.withValues(alpha: 0.3),
+          padding: const EdgeInsets.symmetric(vertical: 18),
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(14),
+          ),
+        ),
+        child: const Text(
+          'New Game',
+          style: TextStyle(
+            fontSize: 16,
+            fontWeight: FontWeight.w600,
+            letterSpacing: 0.3,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildInfoSection(bool isDark) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E2028) : AppColors.paper,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+          color: isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+          width: 1,
+        ),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceAround,
+        children: [
+          _buildStat('0', 'Played', isDark),
+          _buildDivider(isDark),
+          _buildStat('0', 'Won', isDark),
+          _buildDivider(isDark),
+          _buildStat('--:--', 'Best', isDark),
         ],
       ),
     );
   }
 
-  String _difficultyLabel(Difficulty diff) {
-    switch (diff) {
-      case Difficulty.easy:
-        return 'Easy';
-      case Difficulty.medium:
-        return 'Medium';
-      case Difficulty.hard:
-        return 'Hard';
-      case Difficulty.expert:
-        return 'Expert';
-    }
-  }
-
-  Widget _buildActionButtons() {
-    return Row(
+  Widget _buildStat(String value, String label, bool isDark) {
+    return Column(
       children: [
-        Expanded(
-          child: ElevatedButton(
-            onPressed: () => _startNewGame(_selectedDifficulty),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.teal,
-              foregroundColor: Colors.white,
-              padding: const EdgeInsets.symmetric(
-                horizontal: 24,
-                vertical: 16,
-              ),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            child: const Text('New Game'),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 22,
+            fontWeight: FontWeight.w700,
+            color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+            fontFeatures: const [FontFeature.tabularFigures()],
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          label,
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.w500,
+            color: isDark ? AppColors.slate : AppColors.muted,
           ),
         ),
       ],
     );
   }
 
+  Widget _buildDivider(bool isDark) {
+    return Container(
+      width: 1,
+      height: 32,
+      color: isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+    );
+  }
+
   void _startNewGame(Difficulty difficulty) {
     Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (_) => GameScreen(difficulty: difficulty),
+      PageRouteBuilder(
+        pageBuilder: (context, animation, secondaryAnimation) =>
+            GameScreen(difficulty: difficulty),
+        transitionsBuilder: (context, animation, secondaryAnimation, child) {
+          return FadeTransition(
+            opacity: animation,
+            child: child,
+          );
+        },
+        transitionDuration: const Duration(milliseconds: 300),
       ),
     );
   }

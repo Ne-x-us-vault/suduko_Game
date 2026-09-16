@@ -25,6 +25,7 @@ class NumberPad extends StatelessWidget {
 
     return Column(
       children: [
+        // Number row
         Row(
           children: List.generate(9, (i) {
             final num = i + 1;
@@ -33,24 +34,37 @@ class NumberPad extends StatelessWidget {
 
             return Expanded(
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 2),
+                padding: const EdgeInsets.symmetric(horizontal: 2.5),
                 child: GestureDetector(
                   onTap: isComplete ? null : () => onNumberTap(num),
-                  child: Container(
-                    height: 48,
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 150),
+                    height: 52,
                     decoration: BoxDecoration(
                       color: isComplete
                           ? Colors.transparent
                           : (isDark
-                              ? AppColors.graphite.withValues(alpha: 0.8)
-                              : AppColors.cellSurface),
-                      borderRadius: BorderRadius.circular(8),
-                      border: isComplete
+                              ? const Color(0xFF252830)
+                              : AppColors.paper),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: isComplete
+                            ? Colors.transparent
+                            : (isDark
+                                ? const Color(0xFF2D3040)
+                                : AppColors.gridThin),
+                        width: 1,
+                      ),
+                      boxShadow: isComplete
                           ? null
-                          : Border.all(
-                              color: AppColors.gridLine.withValues(alpha: 0.5),
-                              width: 1,
-                            ),
+                          : [
+                              BoxShadow(
+                                color: Colors.black
+                                    .withValues(alpha: isDark ? 0.2 : 0.04),
+                                blurRadius: 4,
+                                offset: const Offset(0, 1),
+                              ),
+                            ],
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -59,21 +73,26 @@ class NumberPad extends StatelessWidget {
                           '$num',
                           style: TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w500,
+                            fontWeight: FontWeight.w600,
                             color: isComplete
                                 ? Colors.transparent
-                                : (isDark ? AppColors.ivory : AppColors.graphite),
+                                : (isDark
+                                    ? const Color(0xFFE5E7EB)
+                                    : AppColors.ink),
                           ),
                         ),
                         if (!isComplete)
-                          Text(
-                            '$count',
-                            style: TextStyle(
-                              fontSize: 8,
-                              color: (isDark
-                                      ? AppColors.ivory
-                                      : AppColors.graphite)
-                                  .withValues(alpha: 0.4),
+                          Padding(
+                            padding: const EdgeInsets.only(top: 1),
+                            child: Text(
+                              '$count',
+                              style: TextStyle(
+                                fontSize: 9,
+                                fontWeight: FontWeight.w500,
+                                color: isDark
+                                    ? AppColors.slate
+                                    : AppColors.muted,
+                              ),
                             ),
                           ),
                       ],
@@ -84,23 +103,25 @@ class NumberPad extends StatelessWidget {
             );
           }),
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
+        // Action row
         Row(
           children: [
             Expanded(
-              child: _buildActionButton(
+              child: _buildAction(
                 context,
-                icon: Icons.delete_outline,
+                icon: Icons.delete_outline_rounded,
                 label: 'Erase',
                 onTap: onErase,
+                isActive: false,
                 isDark: isDark,
               ),
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildActionButton(
+              child: _buildAction(
                 context,
-                icon: Icons.edit_note,
+                icon: Icons.edit_note_rounded,
                 label: 'Notes',
                 onTap: onNotesToggle,
                 isActive: notesMode,
@@ -109,11 +130,12 @@ class NumberPad extends StatelessWidget {
             ),
             const SizedBox(width: 8),
             Expanded(
-              child: _buildActionButton(
+              child: _buildAction(
                 context,
-                icon: Icons.undo,
+                icon: Icons.undo_rounded,
                 label: 'Undo',
                 onTap: onUndo,
+                isActive: false,
                 isDark: isDark,
               ),
             ),
@@ -123,29 +145,28 @@ class NumberPad extends StatelessWidget {
     );
   }
 
-  Widget _buildActionButton(
+  Widget _buildAction(
     BuildContext context, {
     required IconData icon,
     required String label,
     required VoidCallback onTap,
-    bool isActive = false,
+    required bool isActive,
     required bool isDark,
   }) {
     return GestureDetector(
       onTap: onTap,
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.teal.withValues(alpha: 0.15)
-              : (isDark
-                  ? AppColors.graphite.withValues(alpha: 0.5)
-                  : AppColors.cellSurface),
-          borderRadius: BorderRadius.circular(8),
+              ? AppColors.teal.withValues(alpha: 0.12)
+              : (isDark ? const Color(0xFF252830) : AppColors.paper),
+          borderRadius: BorderRadius.circular(10),
           border: Border.all(
             color: isActive
-                ? AppColors.teal
-                : AppColors.gridLine.withValues(alpha: 0.5),
+                ? AppColors.teal.withValues(alpha: 0.5)
+                : (isDark ? const Color(0xFF2D3040) : AppColors.gridThin),
             width: isActive ? 1.5 : 1,
           ),
         ),
@@ -153,21 +174,20 @@ class NumberPad extends StatelessWidget {
           children: [
             Icon(
               icon,
-              size: 20,
+              size: 18,
               color: isActive
                   ? AppColors.teal
-                  : (isDark ? AppColors.ivory : AppColors.graphite),
+                  : (isDark ? const Color(0xFF9CA3AF) : AppColors.slate),
             ),
-            const SizedBox(height: 2),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
                 fontSize: 10,
+                fontWeight: FontWeight.w500,
                 color: isActive
                     ? AppColors.teal
-                    : (isDark
-                        ? AppColors.ivory.withValues(alpha: 0.6)
-                        : AppColors.graphite.withValues(alpha: 0.6)),
+                    : (isDark ? AppColors.slate : AppColors.muted),
               ),
             ),
           ],
