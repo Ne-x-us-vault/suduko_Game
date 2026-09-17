@@ -176,7 +176,7 @@ class SudokuCellWidget extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.slate : AppColors.muted,
+                    color: isDark ? AppColors.grey500 : AppColors.grey400,
                   ),
                 ),
               ),

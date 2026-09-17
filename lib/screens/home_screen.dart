@@ -52,15 +52,9 @@ class _HomeScreenState extends State<HomeScreen> {
           width: 52,
           height: 52,
           decoration: BoxDecoration(
-            color: AppColors.teal,
-            borderRadius: BorderRadius.circular(14),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.teal.withValues(alpha: 0.3),
-                blurRadius: 12,
-                offset: const Offset(0, 4),
-              ),
-            ],
+            color: AppColors.black,
+            borderRadius: BorderRadius.circular(0),
+            boxShadow: [],
           ),
           child: const Center(
             child: Text(
@@ -85,7 +79,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+                  color: isDark ? AppColors.white : AppColors.black,
                   letterSpacing: -1.2,
                   height: 1.1,
                 ),
@@ -96,7 +90,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 style: TextStyle(
                   fontSize: 32,
                   fontWeight: FontWeight.w300,
-                  color: isDark ? AppColors.slate : AppColors.muted,
+                  color: isDark ? AppColors.grey400 : AppColors.grey500,
                   letterSpacing: -0.5,
                   height: 1.1,
                 ),
@@ -115,7 +109,7 @@ class _HomeScreenState extends State<HomeScreen> {
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 1.2,
-        color: isDark ? AppColors.slate : AppColors.muted,
+        color: isDark ? AppColors.grey500 : AppColors.grey400,
       ),
     );
   }
@@ -160,31 +154,16 @@ class _HomeScreenState extends State<HomeScreen> {
           padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
           decoration: BoxDecoration(
             color: isSelected
-                ? AppColors.teal
-                : (isDark ? const Color(0xFF1E2028) : AppColors.paper),
-            borderRadius: BorderRadius.circular(14),
+                ? AppColors.black
+                : (isDark ? AppColors.grey900 : AppColors.white),
+            borderRadius: BorderRadius.circular(0),
             border: Border.all(
               color: isSelected
-                  ? AppColors.teal
-                  : (isDark ? const Color(0xFF2D3040) : AppColors.gridThin),
+                  ? AppColors.black
+                  : (isDark ? AppColors.grey800 : AppColors.gridThin),
               width: isSelected ? 2 : 1,
             ),
-            boxShadow: isSelected
-                ? [
-                    BoxShadow(
-                      color: AppColors.teal.withValues(alpha: 0.25),
-                      blurRadius: 12,
-                      offset: const Offset(0, 4),
-                    ),
-                  ]
-                : [
-                    BoxShadow(
-                      color: Colors.black
-                          .withValues(alpha: isDark ? 0.15 : 0.04),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2),
-                    ),
-                  ],
+            boxShadow: [],
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -196,7 +175,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.w600,
                   color: isSelected
                       ? Colors.white
-                      : (isDark ? const Color(0xFFE5E7EB) : AppColors.ink),
+                      : (isDark ? AppColors.white : AppColors.black),
                 ),
               ),
               const SizedBox(height: 4),
@@ -207,7 +186,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontWeight: FontWeight.w500,
                   color: isSelected
                       ? Colors.white.withValues(alpha: 0.7)
-                      : (isDark ? AppColors.slate : AppColors.muted),
+                      : (isDark ? AppColors.grey500 : AppColors.grey400),
                 ),
               ),
             ],
@@ -223,13 +202,12 @@ class _HomeScreenState extends State<HomeScreen> {
       child: ElevatedButton(
         onPressed: () => _startNewGame(_selectedDifficulty),
         style: ElevatedButton.styleFrom(
-          backgroundColor: AppColors.teal,
+          backgroundColor: AppColors.black,
           foregroundColor: Colors.white,
-          elevation: 4,
-          shadowColor: AppColors.teal.withValues(alpha: 0.3),
+          elevation: 0,
           padding: const EdgeInsets.symmetric(vertical: 18),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(0),
           ),
         ),
         child: const Text(
@@ -248,10 +226,10 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: isDark ? const Color(0xFF1E2028) : AppColors.paper,
-        borderRadius: BorderRadius.circular(16),
+        color: isDark ? AppColors.grey900 : AppColors.white,
+        borderRadius: BorderRadius.circular(0),
         border: Border.all(
-          color: isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+          color: isDark ? AppColors.grey800 : AppColors.gridThin,
           width: 1,
         ),
       ),
@@ -276,7 +254,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.w700,
-            color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+            color: isDark ? AppColors.white : AppColors.black,
             fontFeatures: const [FontFeature.tabularFigures()],
           ),
         ),
@@ -286,7 +264,7 @@ class _HomeScreenState extends State<HomeScreen> {
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.w500,
-            color: isDark ? AppColors.slate : AppColors.muted,
+            color: isDark ? AppColors.grey500 : AppColors.grey400,
           ),
         ),
       ],
@@ -297,7 +275,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Container(
       width: 1,
       height: 32,
-      color: isDark ? const Color(0xFF2D3040) : AppColors.gridThin,
+      color: isDark ? AppColors.grey800 : AppColors.gridThin,
     );
   }
 

@@ -354,8 +354,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
       context: context,
       barrierDismissible: false,
       builder: (context) => Dialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        backgroundColor: isDark ? const Color(0xFF1E2028) : AppColors.paper,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+        backgroundColor: isDark ? AppColors.black : AppColors.white,
         child: Padding(
           padding: const EdgeInsets.all(28),
           child: Column(
@@ -366,13 +366,15 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 width: 72,
                 height: 72,
                 decoration: const BoxDecoration(
-                  color: AppColors.amberSoft,
+                  color: AppColors.black,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(
-                  Icons.emoji_events_rounded,
-                  size: 40,
-                  color: AppColors.amber,
+                child: const Center(
+                  child: Icon(
+                    Icons.emoji_events_rounded,
+                    size: 40,
+                    color: Colors.white,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -381,7 +383,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
-                  color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+                  color: isDark ? AppColors.white : AppColors.black,
                 ),
               ),
               const SizedBox(height: 12),
@@ -390,7 +392,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 style: const TextStyle(
                   fontSize: 36,
                   fontWeight: FontWeight.w700,
-                  color: AppColors.teal,
+                  color: AppColors.black,
                   fontFeatures: [FontFeature.tabularFigures()],
                 ),
               ),
@@ -400,7 +402,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                 style: TextStyle(
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
-                  color: isDark ? AppColors.slate : AppColors.muted,
+                  color: isDark ? AppColors.grey400 : AppColors.grey600,
                 ),
               ),
               const SizedBox(height: 28),
@@ -415,11 +417,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                       style: OutlinedButton.styleFrom(
                         side: BorderSide(
                           color: isDark
-                              ? const Color(0xFF2D3040)
+                              ? AppColors.grey700
                               : AppColors.gridThin,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -427,8 +429,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                         'Home',
                         style: TextStyle(
                           color: isDark
-                              ? const Color(0xFFE5E7EB)
-                              : AppColors.ink,
+                              ? AppColors.white
+                              : AppColors.black,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
@@ -442,11 +444,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                         setState(_startNewGame);
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.teal,
+                        backgroundColor: AppColors.black,
                         foregroundColor: Colors.white,
-                        elevation: 2,
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(0),
                         ),
                         padding: const EdgeInsets.symmetric(vertical: 14),
                       ),
@@ -483,7 +485,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
           style: TextStyle(
             fontSize: 16,
             fontWeight: FontWeight.w600,
-            color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+            color: isDark ? AppColors.white : AppColors.black,
           ),
         ),
         centerTitle: true,
@@ -494,11 +496,11 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
                 decoration: BoxDecoration(
-                  color: isDark ? const Color(0xFF252830) : AppColors.paper,
-                  borderRadius: BorderRadius.circular(8),
+                  color: isDark ? AppColors.grey900 : AppColors.white,
+                  borderRadius: BorderRadius.circular(0),
                   border: Border.all(
                     color: isDark
-                        ? const Color(0xFF2D3040)
+                        ? AppColors.grey800
                         : AppColors.gridThin,
                     width: 1,
                   ),
@@ -509,7 +511,7 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                     fontSize: 15,
                     fontWeight: FontWeight.w600,
                     fontFeatures: const [FontFeature.tabularFigures()],
-                    color: isDark ? const Color(0xFFE5E7EB) : AppColors.ink,
+                    color: isDark ? AppColors.white : AppColors.black,
                   ),
                 ),
               ),
@@ -530,14 +532,14 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                   const SizedBox(height: 4),
                   // Progress
                   ClipRRect(
-                    borderRadius: BorderRadius.circular(2),
+                    borderRadius: BorderRadius.circular(0),
                     child: LinearProgressIndicator(
                       value: progress,
                       backgroundColor: isDark
-                          ? const Color(0xFF252830)
+                          ? AppColors.grey800
                           : AppColors.gridThin,
                       valueColor:
-                          const AlwaysStoppedAnimation<Color>(AppColors.teal),
+                          const AlwaysStoppedAnimation<Color>(AppColors.black),
                       minHeight: 3,
                     ),
                   ),
@@ -577,16 +579,16 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                           horizontal: 18, vertical: 8),
                       decoration: BoxDecoration(
                         color: _hintsRemaining > 0
-                            ? AppColors.amberSoft
+                            ? AppColors.white
                             : (isDark
-                                ? const Color(0xFF252830)
-                                : AppColors.gridThin.withValues(alpha: 0.3)),
-                        borderRadius: BorderRadius.circular(20),
+                                ? AppColors.grey800
+                                : AppColors.grey200),
+                        borderRadius: BorderRadius.circular(0),
                         border: Border.all(
                           color: _hintsRemaining > 0
-                              ? AppColors.amber.withValues(alpha: 0.4)
+                              ? AppColors.black
                               : (isDark
-                                  ? const Color(0xFF2D3040)
+                                  ? AppColors.grey700
                                   : AppColors.gridThin),
                         ),
                       ),
@@ -597,8 +599,8 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                             Icons.lightbulb_rounded,
                             size: 15,
                             color: _hintsRemaining > 0
-                                ? AppColors.amber
-                                : (isDark ? AppColors.slate : AppColors.muted),
+                                ? AppColors.black
+                                : (isDark ? AppColors.grey500 : AppColors.grey400),
                           ),
                           const SizedBox(width: 6),
                           Text(
@@ -607,10 +609,10 @@ class _GameScreenState extends State<GameScreen> with SingleTickerProviderStateM
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                               color: _hintsRemaining > 0
-                                  ? AppColors.amber
+                                  ? AppColors.black
                                   : (isDark
-                                      ? AppColors.slate
-                                      : AppColors.muted),
+                                      ? AppColors.grey500
+                                      : AppColors.grey400),
                             ),
                           ),
                         ],
