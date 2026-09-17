@@ -40,28 +40,15 @@ class SudokuBoardWidget extends StatelessWidget {
           width: boardSize,
           height: boardSize,
           decoration: BoxDecoration(
-            color: isDark ? const Color(0xFF1A1D26) : AppColors.paper,
+            color: isDark ? AppColors.black : AppColors.white,
             border: Border.all(
-              color: isDark ? const Color(0xFF3D4255) : AppColors.gridThick,
+              color: isDark ? AppColors.grey700 : AppColors.gridThick,
               width: 3.0,
             ),
-            borderRadius: BorderRadius.circular(6),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.4 : 0.08),
-                blurRadius: 20,
-                offset: const Offset(0, 4),
-                spreadRadius: -2,
-              ),
-              BoxShadow(
-                color: Colors.black.withValues(alpha: isDark ? 0.2 : 0.04),
-                blurRadius: 4,
-                offset: const Offset(0, 1),
-              ),
-            ],
+            borderRadius: BorderRadius.circular(0),
           ),
           child: ClipRRect(
-            borderRadius: BorderRadius.circular(3),
+            borderRadius: BorderRadius.circular(0),
             child: Column(
               children: List.generate(3, (boxRow) {
                 return Expanded(

@@ -1,100 +1,101 @@
 import 'package:flutter/material.dart';
 
 class AppColors {
-  static const Color cream = Color(0xFFF7F5F0);
-  static const Color paper = Color(0xFFFDFCFA);
-  static const Color ink = Color(0xFF1B1F2B);
-  static const Color inkLight = Color(0xFF3D4255);
-  static const Color slate = Color(0xFF6B7280);
-  static const Color muted = Color(0xFF9CA3AF);
-  static const Color teal = Color(0xFF0E7C6B);
-  static const Color tealSoft = Color(0xFFD1FAE5);
-  static const Color amber = Color(0xFFD97706);
-  static const Color amberSoft = Color(0xFFFEF3C7);
-  static const Color rose = Color(0xFFE11D48);
-  static const Color roseSoft = Color(0xFFFEE2E2);
-  static const Color gridThick = Color(0xFF1B1F2B);
-  static const Color gridThin = Color(0xFFD1D5DB);
+  static const Color white = Color(0xFFFFFFFF);
+  static const Color black = Color(0xFF000000);
+  static const Color grey900 = Color(0xFF111111);
+  static const Color grey800 = Color(0xFF222222);
+  static const Color grey700 = Color(0xFF333333);
+  static const Color grey600 = Color(0xFF444444);
+  static const Color grey500 = Color(0xFF666666);
+  static const Color grey400 = Color(0xFF999999);
+  static const Color grey300 = Color(0xFFCCCCCC);
+  static const Color grey200 = Color(0xFFEEEEEE);
+  static const Color grey100 = Color(0xFFF5F5F5);
+  
+  static const Color gridThick = Color(0xFF000000);
+  static const Color gridThin = Color(0xFFDDDDDD);
+  
   static const Color cellUser = Color(0xFFFFFFFF);
-  static const Color cellOriginal = Color(0xFFF0F4F8);
-  static const Color cellSelected = Color(0xFFD1FAE5);
-  static const Color cellSameNumber = Color(0xFFECFDF5);
-  static const Color cellError = Color(0xFFFEE2E2);
-  static const Color cellHint = Color(0xFFFEF3C7);
+  static const Color cellOriginal = Color(0xFFF9F9F9);
+  static const Color cellSelected = Color(0xFF000000); // Inverted for B&W
+  static const Color cellSameNumber = Color(0xFFF0F0F0);
+  static const Color cellError = Color(0xFFE0E0E0);
+  static const Color cellHint = Color(0xFFF5F5F5);
 }
 
 ThemeData lightTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.light,
   colorScheme: ColorScheme.light(
-    surface: AppColors.cream,
-    primary: AppColors.teal,
-    onPrimary: Colors.white,
-    secondary: AppColors.amber,
-    onSecondary: AppColors.ink,
-    error: AppColors.rose,
-    onError: Colors.white,
-    surfaceTint: AppColors.teal,
+    surface: AppColors.white,
+    primary: AppColors.black,
+    onPrimary: AppColors.white,
+    secondary: AppColors.grey700,
+    onSecondary: AppColors.white,
+    error: AppColors.black,
+    onError: AppColors.white,
+    surfaceTint: AppColors.black,
   ),
   textTheme: const TextTheme(
     displayLarge: TextStyle(
       fontSize: 34,
-      fontWeight: FontWeight.w700,
-      color: AppColors.ink,
+      fontWeight: FontWeight.w800,
+      color: AppColors.black,
       letterSpacing: -1.2,
       height: 1.1,
     ),
     headlineMedium: TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.w600,
-      color: AppColors.ink,
+      color: AppColors.black,
       letterSpacing: -0.4,
     ),
     titleLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
-      color: AppColors.ink,
+      color: AppColors.black,
       letterSpacing: 0.1,
     ),
     bodyLarge: TextStyle(
       fontSize: 15,
-      color: AppColors.inkLight,
+      color: AppColors.grey700,
       height: 1.5,
     ),
     bodyMedium: TextStyle(
       fontSize: 13,
-      color: AppColors.slate,
+      color: AppColors.grey500,
       height: 1.4,
     ),
     labelLarge: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: Colors.white,
+      color: AppColors.white,
       letterSpacing: 0.2,
     ),
   ),
-  scaffoldBackgroundColor: AppColors.cream,
+  scaffoldBackgroundColor: AppColors.white,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
-    foregroundColor: AppColors.ink,
+    foregroundColor: AppColors.black,
     elevation: 0,
     scrolledUnderElevation: 0,
     titleTextStyle: TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w600,
-      color: AppColors.ink,
+      fontWeight: FontWeight.w700,
+      color: AppColors.black,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: WidgetStatePropertyAll(AppColors.teal),
-      foregroundColor: WidgetStatePropertyAll(Colors.white),
-      elevation: const WidgetStatePropertyAll(2),
+      backgroundColor: WidgetStatePropertyAll(AppColors.black),
+      foregroundColor: WidgetStatePropertyAll(AppColors.white),
+      elevation: const WidgetStatePropertyAll(0),
       padding: WidgetStatePropertyAll(
         const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)), // Sharp edges for professional look
       ),
       textStyle: const WidgetStatePropertyAll(
         TextStyle(
@@ -106,9 +107,9 @@ ThemeData lightTheme() => ThemeData(
     ),
   ),
   cardTheme: CardThemeData(
-    color: AppColors.paper,
+    color: AppColors.white,
     elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
     surfaceTintColor: Colors.transparent,
   ),
 );
@@ -117,74 +118,74 @@ ThemeData darkTheme() => ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   colorScheme: ColorScheme.dark(
-    surface: Color(0xFF12141A),
-    primary: AppColors.teal,
-    onPrimary: Colors.white,
-    secondary: AppColors.amber,
-    onSecondary: Colors.white,
-    error: AppColors.rose,
-    onError: Colors.white,
-    surfaceTint: AppColors.teal,
+    surface: AppColors.black,
+    primary: AppColors.white,
+    onPrimary: AppColors.black,
+    secondary: AppColors.grey400,
+    onSecondary: AppColors.black,
+    error: AppColors.white,
+    onError: AppColors.black,
+    surfaceTint: AppColors.white,
   ),
   textTheme: const TextTheme(
     displayLarge: TextStyle(
       fontSize: 34,
-      fontWeight: FontWeight.w700,
-      color: Color(0xFFE5E7EB),
+      fontWeight: FontWeight.w800,
+      color: AppColors.white,
       letterSpacing: -1.2,
       height: 1.1,
     ),
     headlineMedium: TextStyle(
       fontSize: 20,
       fontWeight: FontWeight.w600,
-      color: Color(0xFFE5E7EB),
+      color: AppColors.white,
       letterSpacing: -0.4,
     ),
     titleLarge: TextStyle(
       fontSize: 16,
       fontWeight: FontWeight.w600,
-      color: Color(0xFFE5E7EB),
+      color: AppColors.white,
       letterSpacing: 0.1,
     ),
     bodyLarge: TextStyle(
       fontSize: 15,
-      color: Color(0xFFD1D5DB),
+      color: AppColors.grey300,
       height: 1.5,
     ),
     bodyMedium: TextStyle(
       fontSize: 13,
-      color: Color(0xFF9CA3AF),
+      color: AppColors.grey500,
       height: 1.4,
     ),
     labelLarge: TextStyle(
       fontSize: 14,
       fontWeight: FontWeight.w600,
-      color: Colors.white,
+      color: AppColors.black,
       letterSpacing: 0.2,
     ),
   ),
-  scaffoldBackgroundColor: const Color(0xFF12141A),
+  scaffoldBackgroundColor: AppColors.black,
   appBarTheme: const AppBarTheme(
     backgroundColor: Colors.transparent,
-    foregroundColor: Color(0xFFE5E7EB),
+    foregroundColor: AppColors.white,
     elevation: 0,
     scrolledUnderElevation: 0,
     titleTextStyle: TextStyle(
       fontSize: 18,
-      fontWeight: FontWeight.w600,
-      color: Color(0xFFE5E7EB),
+      fontWeight: FontWeight.w700,
+      color: AppColors.white,
     ),
   ),
   elevatedButtonTheme: ElevatedButtonThemeData(
     style: ButtonStyle(
-      backgroundColor: WidgetStatePropertyAll(AppColors.teal),
-      foregroundColor: WidgetStatePropertyAll(Colors.white),
-      elevation: const WidgetStatePropertyAll(2),
+      backgroundColor: WidgetStatePropertyAll(AppColors.white),
+      foregroundColor: WidgetStatePropertyAll(AppColors.black),
+      elevation: const WidgetStatePropertyAll(0),
       padding: WidgetStatePropertyAll(
         const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
       ),
       textStyle: const WidgetStatePropertyAll(
         TextStyle(
@@ -196,9 +197,9 @@ ThemeData darkTheme() => ThemeData(
     ),
   ),
   cardTheme: CardThemeData(
-    color: const Color(0xFF1E2028),
+    color: AppColors.grey900,
     elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
     surfaceTintColor: Colors.transparent,
   ),
 );

@@ -87,66 +87,59 @@ class SudokuCellWidget extends StatelessWidget {
 
   Color _backgroundColor(bool isDark) {
     if (cell.isSelected) {
-      return isDark
-          ? AppColors.teal.withValues(alpha: 0.2)
-          : AppColors.cellSelected;
+      return isDark ? AppColors.white : AppColors.black;
     }
     if (cell.isError) {
-      return isDark
-          ? AppColors.rose.withValues(alpha: 0.12)
-          : AppColors.roseSoft;
+      return isDark ? AppColors.grey800 : AppColors.grey200;
     }
-    if (cell.isHint) return AppColors.cellHint;
+    if (cell.isHint) return isDark ? AppColors.grey700 : AppColors.grey100;
     if (isSameNumber && cell.isFilled) {
-      return isDark
-          ? AppColors.teal.withValues(alpha: 0.08)
-          : AppColors.tealSoft.withValues(alpha: 0.5);
+      return isDark ? AppColors.grey900 : AppColors.grey100;
     }
     if (isPeer) {
-      return isDark
-          ? const Color(0xFF22252E)
-          : const Color(0xFFF5F6F8);
+      return isDark ? AppColors.grey800 : AppColors.grey100;
     }
     if (cell.isOriginal) {
-      return isDark ? const Color(0xFF1E2028) : AppColors.cellOriginal;
+      return isDark ? AppColors.grey900 : AppColors.cellOriginal;
     }
-    return isDark ? const Color(0xFF252830) : AppColors.cellUser;
+    return isDark ? AppColors.black : AppColors.cellUser;
   }
 
   Color _textColor(bool isDark) {
+    if (cell.isSelected) {
+      return isDark ? AppColors.black : AppColors.white;
+    }
     if (cell.isOriginal) {
-      return isDark ? const Color(0xFFE5E7EB) : AppColors.ink;
+      return isDark ? AppColors.white : AppColors.black;
     }
-    if (cell.isHint) return AppColors.amber;
-    if (cell.isError) return AppColors.rose;
+    if (cell.isHint) return isDark ? AppColors.grey400 : AppColors.grey600;
+    if (cell.isError) return isDark ? AppColors.grey400 : AppColors.grey600;
     if (isSameNumber && cell.isFilled) {
-      return isDark ? AppColors.teal : AppColors.teal;
+      return isDark ? AppColors.white : AppColors.black;
     }
-    return isDark
-        ? AppColors.teal.withValues(alpha: 0.9)
-        : AppColors.teal;
+    return isDark ? AppColors.grey300 : AppColors.grey700;
   }
 
   Color _topBorderColor(bool isDark) {
-    if (cell.isSelected) return AppColors.teal;
-    return isDark ? const Color(0xFF2D3040) : AppColors.gridThin;
+    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
+    return isDark ? AppColors.grey800 : AppColors.gridThin;
   }
 
   double get _topBorderWidth => cell.isSelected ? 2.0 : 0.5;
 
   Color _leftBorderColor(bool isDark) {
-    if (cell.isSelected) return AppColors.teal;
-    return isDark ? const Color(0xFF2D3040) : AppColors.gridThin;
+    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
+    return isDark ? AppColors.grey800 : AppColors.gridThin;
   }
 
   double get _leftBorderWidth => cell.isSelected ? 2.0 : 0.5;
 
   Color _rightBorderColor(bool isDark, bool isBoxEdge) {
-    if (cell.isSelected) return AppColors.teal;
+    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
     if (isBoxEdge) {
-      return isDark ? const Color(0xFF3D4255) : AppColors.gridThick;
+      return isDark ? AppColors.grey700 : AppColors.gridThick;
     }
-    return isDark ? const Color(0xFF2D3040) : AppColors.gridThin;
+    return isDark ? AppColors.grey800 : AppColors.gridThin;
   }
 
   double _rightBorderWidth(bool isBoxEdge) {
@@ -155,11 +148,11 @@ class SudokuCellWidget extends StatelessWidget {
   }
 
   Color _bottomBorderColor(bool isDark, bool isBoxEdge) {
-    if (cell.isSelected) return AppColors.teal;
+    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
     if (isBoxEdge) {
-      return isDark ? const Color(0xFF3D4255) : AppColors.gridThick;
+      return isDark ? AppColors.grey700 : AppColors.gridThick;
     }
-    return isDark ? const Color(0xFF2D3040) : AppColors.gridThin;
+    return isDark ? AppColors.grey800 : AppColors.gridThin;
   }
 
   double _bottomBorderWidth(bool isBoxEdge) {

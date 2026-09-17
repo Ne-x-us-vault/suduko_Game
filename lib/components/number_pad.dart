@@ -44,27 +44,18 @@ class NumberPad extends StatelessWidget {
                       color: isComplete
                           ? Colors.transparent
                           : (isDark
-                              ? const Color(0xFF252830)
-                              : AppColors.paper),
-                      borderRadius: BorderRadius.circular(10),
+                              ? AppColors.grey900
+                              : AppColors.white),
+                      borderRadius: BorderRadius.circular(0),
                       border: Border.all(
                         color: isComplete
                             ? Colors.transparent
                             : (isDark
-                                ? const Color(0xFF2D3040)
+                                ? AppColors.grey800
                                 : AppColors.gridThin),
                         width: 1,
                       ),
-                      boxShadow: isComplete
-                          ? null
-                          : [
-                              BoxShadow(
-                                color: Colors.black
-                                    .withValues(alpha: isDark ? 0.2 : 0.04),
-                                blurRadius: 4,
-                                offset: const Offset(0, 1),
-                              ),
-                            ],
+                      boxShadow: null,
                     ),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -77,8 +68,8 @@ class NumberPad extends StatelessWidget {
                             color: isComplete
                                 ? Colors.transparent
                                 : (isDark
-                                    ? const Color(0xFFE5E7EB)
-                                    : AppColors.ink),
+                                    ? AppColors.white
+                                    : AppColors.black),
                           ),
                         ),
                         if (!isComplete)
@@ -90,8 +81,8 @@ class NumberPad extends StatelessWidget {
                                 fontSize: 9,
                                 fontWeight: FontWeight.w500,
                                 color: isDark
-                                    ? AppColors.slate
-                                    : AppColors.muted,
+                                    ? AppColors.grey500
+                                    : AppColors.grey400,
                               ),
                             ),
                           ),
@@ -160,14 +151,14 @@ class NumberPad extends StatelessWidget {
         padding: const EdgeInsets.symmetric(vertical: 10),
         decoration: BoxDecoration(
           color: isActive
-              ? AppColors.teal.withValues(alpha: 0.12)
-              : (isDark ? const Color(0xFF252830) : AppColors.paper),
-          borderRadius: BorderRadius.circular(10),
+              ? (isDark ? AppColors.white : AppColors.black)
+              : (isDark ? AppColors.grey900 : AppColors.white),
+          borderRadius: BorderRadius.circular(0),
           border: Border.all(
             color: isActive
-                ? AppColors.teal.withValues(alpha: 0.5)
-                : (isDark ? const Color(0xFF2D3040) : AppColors.gridThin),
-            width: isActive ? 1.5 : 1,
+                ? (isDark ? AppColors.black : AppColors.white)
+                : (isDark ? AppColors.grey800 : AppColors.gridThin),
+            width: isActive ? 2.0 : 1,
           ),
         ),
         child: Column(
@@ -176,8 +167,8 @@ class NumberPad extends StatelessWidget {
               icon,
               size: 18,
               color: isActive
-                  ? AppColors.teal
-                  : (isDark ? const Color(0xFF9CA3AF) : AppColors.slate),
+                  ? (isDark ? AppColors.black : AppColors.white)
+                  : (isDark ? AppColors.grey400 : AppColors.grey600),
             ),
             const SizedBox(height: 3),
             Text(
@@ -186,8 +177,8 @@ class NumberPad extends StatelessWidget {
                 fontSize: 10,
                 fontWeight: FontWeight.w500,
                 color: isActive
-                    ? AppColors.teal
-                    : (isDark ? AppColors.slate : AppColors.muted),
+                    ? (isDark ? AppColors.black : AppColors.white)
+                    : (isDark ? AppColors.grey500 : AppColors.grey400),
               ),
             ),
           ],
