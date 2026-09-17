@@ -12,16 +12,16 @@ class AppColors {
   static const Color grey300 = Color(0xFFCCCCCC);
   static const Color grey200 = Color(0xFFEEEEEE);
   static const Color grey100 = Color(0xFFF5F5F5);
-  
+
   static const Color gridThick = Color(0xFF000000);
-  static const Color gridThin = Color(0xFFDDDDDD);
-  
+  static const Color gridThin = Color(0xFFBDBDBD); // Slightly darker for better visibility on pure white
+
   static const Color cellUser = Color(0xFFFFFFFF);
-  static const Color cellOriginal = Color(0xFFF9F9F9);
-  static const Color cellSelected = Color(0xFF000000); // Inverted for B&W
-  static const Color cellSameNumber = Color(0xFFF0F0F0);
-  static const Color cellError = Color(0xFFE0E0E0);
-  static const Color cellHint = Color(0xFFF5F5F5);
+  static const Color cellOriginal = Color(0xFFFFFFFF); // Pure white for consistency
+  static const Color cellSelected = Color(0xFF000000); 
+  static const Color cellSameNumber = Color(0xFFF2F2F2);
+  static const Color cellError = Color(0xFFEEEEEE);
+  static const Color cellHint = Color(0xFFF9F9F9);
 }
 
 ThemeData lightTheme() => ThemeData(
@@ -31,7 +31,7 @@ ThemeData lightTheme() => ThemeData(
     surface: AppColors.white,
     primary: AppColors.black,
     onPrimary: AppColors.white,
-    secondary: AppColors.grey700,
+    secondary: AppColors.black,
     onSecondary: AppColors.white,
     error: AppColors.black,
     onError: AppColors.white,
@@ -59,12 +59,12 @@ ThemeData lightTheme() => ThemeData(
     ),
     bodyLarge: TextStyle(
       fontSize: 15,
-      color: AppColors.grey700,
+      color: AppColors.black, // Changed from grey700 to black
       height: 1.5,
     ),
     bodyMedium: TextStyle(
       fontSize: 13,
-      color: AppColors.grey500,
+      color: AppColors.black, // Changed from grey500 to black
       height: 1.4,
     ),
     labelLarge: TextStyle(
@@ -95,7 +95,7 @@ ThemeData lightTheme() => ThemeData(
         const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
       ),
       shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)), // Sharp edges for professional look
+        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
       ),
       textStyle: const WidgetStatePropertyAll(
         TextStyle(
@@ -121,7 +121,7 @@ ThemeData darkTheme() => ThemeData(
     surface: AppColors.black,
     primary: AppColors.white,
     onPrimary: AppColors.black,
-    secondary: AppColors.grey400,
+    secondary: AppColors.white,
     onSecondary: AppColors.black,
     error: AppColors.white,
     onError: AppColors.black,
@@ -149,12 +149,12 @@ ThemeData darkTheme() => ThemeData(
     ),
     bodyLarge: TextStyle(
       fontSize: 15,
-      color: AppColors.grey300,
+      color: AppColors.white, // Changed from grey300 to white
       height: 1.5,
     ),
     bodyMedium: TextStyle(
       fontSize: 13,
-      color: AppColors.grey500,
+      color: AppColors.white, // Changed from grey500 to white
       height: 1.4,
     ),
     labelLarge: TextStyle(
@@ -197,7 +197,7 @@ ThemeData darkTheme() => ThemeData(
     ),
   ),
   cardTheme: CardThemeData(
-    color: AppColors.grey900,
+    color: AppColors.black,
     elevation: 0,
     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
     surfaceTintColor: Colors.transparent,
