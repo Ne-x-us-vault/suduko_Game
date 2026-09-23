@@ -3,7 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:sudoku_game/theme.dart';
 import 'package:sudoku_game/screens/home_screen.dart';
 
-void main() => runApp(const SudokuApp());
+void main() {
+  WidgetsFlutterBinding.ensureInitialized();
+  runApp(const SudokuApp());
+}
 
 class SudokuApp extends StatelessWidget {
   const SudokuApp({super.key});
@@ -16,6 +19,8 @@ class SudokuApp extends StatelessWidget {
       theme: lightTheme(),
       darkTheme: darkTheme(),
       themeMode: ThemeMode.system,
+      themeAnimationDuration: const Duration(milliseconds: 300),
+      themeAnimationCurve: Curves.easeOut,
       home: HomeScreen(),
     );
   }

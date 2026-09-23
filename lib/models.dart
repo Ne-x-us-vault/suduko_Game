@@ -54,7 +54,7 @@ class SudokuBoard extends ChangeNotifier {
   static const int size = 9;
   List<List<SudokuCell>> cells = List.generate(
     9,
-    (_) => List.filled(9, SudokuCell(row: 0, col: 0)),
+    (r) => List.generate(9, (c) => SudokuCell(row: r, col: c)),
   );
   List<List<int>> _solution = List.generate(9, (_) => List.filled(9, 0));
 
@@ -235,6 +235,7 @@ class GameStats extends ChangeNotifier {
   DateTime? lastPlayed;
   int hintsUsed = 0;
   int errorsMade = 0;
+  Map<Difficulty, int> bestTimes = {};
 
   GameStats._internal();
 
@@ -255,6 +256,12 @@ class GameStats extends ChangeNotifier {
         : null;
     hintsUsed = prefs.getInt('${_key}_hints') ?? 0;
     errorsMade = prefs.getInt('${_key}_errors') ?? 0;
+    for (final difficulty in Difficulty.values) {
+      final seconds = prefs.getInt('${_key}_best_${difficulty.name}');
+      if (seconds != null && seconds > 0) {
+        bestTimes[difficulty] = seconds;
+      }
+    }
     notifyListeners();
   }
 
@@ -271,7 +278,26 @@ class GameStats extends ChangeNotifier {
     }
     prefs.setInt('${_key}_hints', hintsUsed);
     prefs.setInt('${_key}_errors', errorsMade);
+    for (final entry in bestTimes.entries) {
+      prefs.setInt('${_key}_best_${entry.key.name}', entry.value);
+    }
     notifyListeners();
+  }
+
+  int? bestTimeFor(Difficulty difficulty) => bestTimes[difficulty];
+
+  void recordBestTime(Difficulty difficulty, int seconds) {
+    final current = bestTimes[difficulty];
+    if (current == null || seconds < current) {
+      bestTimes[difficulty] = seconds;
+      save();
+      notifyListeners();
+    }
+  }
+
+  String get winRate {
+    if (totalGamesPlayed == 0) return '—';
+    return '${(gamesWon * 100 / totalGamesPlayed).round()}%';
   }
 
   void startNewGame() {
@@ -280,7 +306,6 @@ class GameStats extends ChangeNotifier {
     if (currentStreak > maxStreak) maxStreak = currentStreak;
     lastPlayed = DateTime.now();
     save();
-    notifyListeners();
   }
 
   void endGame({required bool won}) {

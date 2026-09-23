@@ -7,9 +7,6 @@ class SudokuCellWidget extends StatelessWidget {
   final VoidCallback onTap;
   final int boxRow;
   final int boxCol;
-  final bool isSameRow;
-  final bool isSameCol;
-  final bool isSameBox;
   final bool isSameNumber;
   final bool isPeer;
 
@@ -19,23 +16,17 @@ class SudokuCellWidget extends StatelessWidget {
     required this.onTap,
     required this.boxRow,
     required this.boxCol,
-    this.isSameRow = false,
-    this.isSameCol = false,
-    this.isSameBox = false,
     this.isSameNumber = false,
     this.isPeer = false,
   });
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
-    final bgColor = _backgroundColor(isDark);
-    final txtColor = _textColor(isDark);
-    final fontWeight = cell.isOriginal ? FontWeight.w700 : FontWeight.w500;
-
     final isRightBoxEdge = boxCol == 2;
     final isBottomBoxEdge = boxRow == 2;
+    final bgColor = _backgroundColor(context);
+    final txtColor = _textColor(context);
+    final fontWeight = cell.isOriginal ? FontWeight.w800 : FontWeight.w600;
 
     return Expanded(
       child: GestureDetector(
@@ -47,20 +38,24 @@ class SudokuCellWidget extends StatelessWidget {
             color: bgColor,
             border: Border(
               top: BorderSide(
-                color: _topBorderColor(isDark),
-                width: _topBorderWidth,
+                color: _borderColor(context),
+                width: (cell.isSelected || boxRow == 0)
+                    ? (cell.isSelected ? 2.4 : 0.8)
+                    : 0.6,
               ),
               left: BorderSide(
-                color: _leftBorderColor(isDark),
-                width: _leftBorderWidth,
+                color: _borderColor(context),
+                width: (cell.isSelected || boxCol == 0)
+                    ? (cell.isSelected ? 2.4 : 0.8)
+                    : 0.6,
               ),
               right: BorderSide(
-                color: _rightBorderColor(isDark, isRightBoxEdge),
-                width: _rightBorderWidth(isRightBoxEdge),
+                color: _edgeColor(context, isRightBoxEdge),
+                width: _edgeWidth(context, isRightBoxEdge),
               ),
               bottom: BorderSide(
-                color: _bottomBorderColor(isDark, isBottomBoxEdge),
-                width: _bottomBorderWidth(isBottomBoxEdge),
+                color: _edgeColor(context, isBottomBoxEdge),
+                width: _edgeWidth(context, isBottomBoxEdge),
               ),
             ),
           ),
@@ -78,91 +73,48 @@ class SudokuCellWidget extends StatelessWidget {
                   ),
                 )
               : cell.hasNotes
-                  ? _buildNotes(cell.notes, isDark)
+                  ? _buildNotes(cell.notes, context)
                   : null,
         ),
       ),
     );
   }
 
-  Color _backgroundColor(bool isDark) {
-    if (cell.isSelected) {
-      return isDark ? AppColors.white : AppColors.black;
-    }
-    if (cell.isError) {
-      return isDark ? AppColors.grey800 : AppColors.grey200;
-    }
-    if (cell.isHint) return isDark ? AppColors.grey700 : AppColors.grey100;
-    if (isSameNumber && cell.isFilled) {
-      return isDark ? AppColors.grey900 : AppColors.grey100;
-    }
-    if (isPeer) {
-      return isDark ? AppColors.grey800 : AppColors.grey100;
-    }
-    if (cell.isOriginal) {
-      return isDark ? AppColors.grey900 : AppColors.cellOriginal;
-    }
-    return isDark ? AppColors.black : AppColors.cellUser;
+  Color _backgroundColor(BuildContext context) {
+    if (cell.isSelected) return context.accent;
+    if (cell.isError) return context.errorSoft;
+    if (cell.isHint) return context.hintSoft;
+    if (isSameNumber && cell.isFilled) return context.accentSoft;
+    if (isPeer) return context.paper;
+    return context.surface;
   }
 
-  Color _textColor(bool isDark) {
-    if (cell.isSelected) {
-      return isDark ? AppColors.black : AppColors.white;
-    }
-    if (cell.isOriginal) {
-      return isDark ? AppColors.white : AppColors.black;
-    }
-    if (cell.isHint) return isDark ? AppColors.grey400 : AppColors.grey600;
-    if (cell.isError) return isDark ? AppColors.grey400 : AppColors.grey600;
-    if (isSameNumber && cell.isFilled) {
-      return isDark ? AppColors.white : AppColors.black;
-    }
-    return isDark ? AppColors.grey300 : AppColors.grey700;
+  Color _textColor(BuildContext context) {
+    if (cell.isSelected) return AppColors.onAccent;
+    if (cell.isError) return context.error;
+    if (cell.isHint) return context.hintInk;
+    if (cell.isOriginal) return context.ink;
+    return context.ink;
   }
 
-  Color _topBorderColor(bool isDark) {
-    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
-    return isDark ? AppColors.grey800 : AppColors.gridThin;
+  Color _borderColor(BuildContext context) {
+    if (cell.isSelected) return context.accent;
+    return context.line;
   }
 
-  double get _topBorderWidth => cell.isSelected ? 2.0 : 0.5;
-
-  Color _leftBorderColor(bool isDark) {
-    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
-    return isDark ? AppColors.grey800 : AppColors.gridThin;
+  Color _edgeColor(BuildContext context, bool isBoxEdge) {
+    if (cell.isSelected) return context.accent;
+    return isBoxEdge ? context.lineStrong : context.line;
   }
 
-  double get _leftBorderWidth => cell.isSelected ? 2.0 : 0.5;
-
-  Color _rightBorderColor(bool isDark, bool isBoxEdge) {
-    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
-    if (isBoxEdge) {
-      return isDark ? AppColors.grey700 : AppColors.gridThick;
-    }
-    return isDark ? AppColors.grey800 : AppColors.gridThin;
+  double _edgeWidth(BuildContext context, bool isBoxEdge) {
+    if (cell.isSelected) return 2.4;
+    return isBoxEdge ? 1.8 : 0.6;
   }
 
-  double _rightBorderWidth(bool isBoxEdge) {
-    if (cell.isSelected) return 2.0;
-    return isBoxEdge ? 2.0 : 0.5;
-  }
-
-  Color _bottomBorderColor(bool isDark, bool isBoxEdge) {
-    if (cell.isSelected) return isDark ? AppColors.white : AppColors.black;
-    if (isBoxEdge) {
-      return isDark ? AppColors.grey700 : AppColors.gridThick;
-    }
-    return isDark ? AppColors.grey800 : AppColors.gridThin;
-  }
-
-  double _bottomBorderWidth(bool isBoxEdge) {
-    if (cell.isSelected) return 2.0;
-    return isBoxEdge ? 2.0 : 0.5;
-  }
-
-  Widget _buildNotes(Set<int> notes, bool isDark) {
+  Widget _buildNotes(Set<int> notes, BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.all(1),
+      padding: const EdgeInsets.all(1.5),
       child: GridView.count(
         crossAxisCount: 3,
         physics: const NeverScrollableScrollPhysics(),
@@ -174,9 +126,9 @@ class SudokuCellWidget extends StatelessWidget {
                 child: Text(
                   '$num',
                   style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.w500,
-                    color: isDark ? AppColors.grey500 : AppColors.grey400,
+                    fontSize: 9,
+                    fontWeight: FontWeight.w600,
+                    color: context.inkMuted,
                   ),
                 ),
               ),

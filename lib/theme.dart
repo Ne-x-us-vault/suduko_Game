@@ -1,205 +1,214 @@
 import 'package:flutter/material.dart';
 
+/// Design system: a "printed puzzle sheet" identity.
+///
+/// Warm-neutral paper, muted ink typography and a single indigo accent used
+/// only where it carries meaning (selection, active state, primary action).
+/// The board itself stays sharp-edged to keep the precise grid feel, while
+/// controls get soft radii for a tactile finish.
 class AppColors {
-  static const Color white = Color(0xFFFFFFFF);
-  static const Color black = Color(0xFF000000);
-  static const Color grey900 = Color(0xFF111111);
-  static const Color grey800 = Color(0xFF222222);
-  static const Color grey700 = Color(0xFF333333);
-  static const Color grey600 = Color(0xFF444444);
-  static const Color grey500 = Color(0xFF666666);
-  static const Color grey400 = Color(0xFF999999);
-  static const Color grey300 = Color(0xFFCCCCCC);
-  static const Color grey200 = Color(0xFFEEEEEE);
-  static const Color grey100 = Color(0xFFF5F5F5);
+  // Surfaces
+  static const paper = Color(0xFFF6F6F4); // app background (light)
+  static const surface = Color(0xFFFFFFFF); // cards & board (light)
+  static const paperDark = Color(0xFF101114); // app background (dark)
+  static const surfaceDark = Color(0xFF1B1D22); // cards & board (dark)
+  static const raisedDark = Color(0xFF25282E); // elevated tiles (dark)
 
-  static const Color gridThick = Color(0xFF000000);
-  static const Color gridThin = Color(0xFFBDBDBD); // Slightly darker for better visibility on pure white
+  // Ink
+  static const ink = Color(0xFF1A1C20);
+  static const inkMuted = Color(0xFF6E737B);
+  static const inkDark = Color(0xFFF2F3F5);
+  static const inkMutedDark = Color(0xFFA7ACB5);
 
-  static const Color cellUser = Color(0xFFFFFFFF);
-  static const Color cellOriginal = Color(0xFFFFFFFF); // Pure white for consistency
-  static const Color cellSelected = Color(0xFF000000); 
-  static const Color cellSameNumber = Color(0xFFF2F2F2);
-  static const Color cellError = Color(0xFFEEEEEE);
-  static const Color cellHint = Color(0xFFF9F9F9);
+  // Accent
+  static const accent = Color(0xFF4059E8);
+  static const accentDark = Color(0xFF7C93FF);
+  static const onAccent = Color(0xFFFFFFFF);
+  static const accentSoft = Color(0xFFECEFFD); // peer / selected tint (light)
+  static const accentSoftDark = Color(0xFF232946); // peer tint (dark)
+
+  // Lines
+  static const line = Color(0xFFE4E5EA); // thin rules (light)
+  static const lineStrong = Color(0xFFC7CAD2); // box separators (light)
+  static const lineDark = Color(0xFF2A2D34); // thin rules (dark)
+  static const lineStrongDark = Color(0xFF454A54); // box separators (dark)
+
+  // Feedback
+  static const error = Color(0xFFE5484D);
+  static const errorDark = Color(0xFFFF6369);
+  static const errorSoft = Color(0xFFFDECEC);
+  static const errorSoftDark = Color(0xFF3A2225);
+
+  // Hints
+  static const hintInk = Color(0xFFB45309);
+  static const hintInkDark = Color(0xFFF0B429);
+  static const hintSoft = Color(0xFFFFF3D6);
+  static const hintSoftDark = Color(0xFF33290F);
 }
 
-ThemeData lightTheme() => ThemeData(
-  useMaterial3: true,
-  brightness: Brightness.light,
-  colorScheme: ColorScheme.light(
-    surface: AppColors.white,
-    primary: AppColors.black,
-    onPrimary: AppColors.white,
-    secondary: AppColors.black,
-    onSecondary: AppColors.white,
-    error: AppColors.black,
-    onError: AppColors.white,
-    surfaceTint: AppColors.black,
-  ),
-  textTheme: const TextTheme(
-    displayLarge: TextStyle(
-      fontSize: 34,
-      fontWeight: FontWeight.w800,
-      color: AppColors.black,
-      letterSpacing: -1.2,
-      height: 1.1,
-    ),
-    headlineMedium: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      color: AppColors.black,
-      letterSpacing: -0.4,
-    ),
-    titleLarge: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: AppColors.black,
-      letterSpacing: 0.1,
-    ),
-    bodyLarge: TextStyle(
-      fontSize: 15,
-      color: AppColors.black, // Changed from grey700 to black
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 13,
-      color: AppColors.black, // Changed from grey500 to black
-      height: 1.4,
-    ),
-    labelLarge: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: AppColors.white,
-      letterSpacing: 0.2,
-    ),
-  ),
-  scaffoldBackgroundColor: AppColors.white,
-  appBarTheme: const AppBarTheme(
-    backgroundColor: Colors.transparent,
-    foregroundColor: AppColors.black,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    titleTextStyle: TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w700,
-      color: AppColors.black,
-    ),
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ButtonStyle(
-      backgroundColor: WidgetStatePropertyAll(AppColors.black),
-      foregroundColor: WidgetStatePropertyAll(AppColors.white),
-      elevation: const WidgetStatePropertyAll(0),
-      padding: WidgetStatePropertyAll(
-        const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
-      ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-      ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
-          letterSpacing: 0.2,
-        ),
-      ),
-    ),
-  ),
-  cardTheme: CardThemeData(
-    color: AppColors.white,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-    surfaceTintColor: Colors.transparent,
-  ),
-);
+extension AppColorContext on BuildContext {
+  bool get isDarkMode => Theme.of(this).brightness == Brightness.dark;
 
-ThemeData darkTheme() => ThemeData(
-  useMaterial3: true,
-  brightness: Brightness.dark,
-  colorScheme: ColorScheme.dark(
-    surface: AppColors.black,
-    primary: AppColors.white,
-    onPrimary: AppColors.black,
-    secondary: AppColors.white,
-    onSecondary: AppColors.black,
-    error: AppColors.white,
-    onError: AppColors.black,
-    surfaceTint: AppColors.white,
-  ),
-  textTheme: const TextTheme(
-    displayLarge: TextStyle(
-      fontSize: 34,
-      fontWeight: FontWeight.w800,
-      color: AppColors.white,
-      letterSpacing: -1.2,
-      height: 1.1,
-    ),
-    headlineMedium: TextStyle(
-      fontSize: 20,
-      fontWeight: FontWeight.w600,
-      color: AppColors.white,
-      letterSpacing: -0.4,
-    ),
-    titleLarge: TextStyle(
-      fontSize: 16,
-      fontWeight: FontWeight.w600,
-      color: AppColors.white,
-      letterSpacing: 0.1,
-    ),
-    bodyLarge: TextStyle(
-      fontSize: 15,
-      color: AppColors.white, // Changed from grey300 to white
-      height: 1.5,
-    ),
-    bodyMedium: TextStyle(
-      fontSize: 13,
-      color: AppColors.white, // Changed from grey500 to white
-      height: 1.4,
-    ),
-    labelLarge: TextStyle(
-      fontSize: 14,
-      fontWeight: FontWeight.w600,
-      color: AppColors.black,
-      letterSpacing: 0.2,
-    ),
-  ),
-  scaffoldBackgroundColor: AppColors.black,
-  appBarTheme: const AppBarTheme(
-    backgroundColor: Colors.transparent,
-    foregroundColor: AppColors.white,
-    elevation: 0,
-    scrolledUnderElevation: 0,
-    titleTextStyle: TextStyle(
-      fontSize: 18,
-      fontWeight: FontWeight.w700,
-      color: AppColors.white,
-    ),
-  ),
-  elevatedButtonTheme: ElevatedButtonThemeData(
-    style: ButtonStyle(
-      backgroundColor: WidgetStatePropertyAll(AppColors.white),
-      foregroundColor: WidgetStatePropertyAll(AppColors.black),
-      elevation: const WidgetStatePropertyAll(0),
-      padding: WidgetStatePropertyAll(
-        const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+  Color get paper =>
+      isDarkMode ? AppColors.paperDark : AppColors.paper;
+  Color get surface =>
+      isDarkMode ? AppColors.surfaceDark : AppColors.surface;
+  Color get ink => isDarkMode ? AppColors.inkDark : AppColors.ink;
+  Color get inkMuted =>
+      isDarkMode ? AppColors.inkMutedDark : AppColors.inkMuted;
+  Color get accent =>
+      isDarkMode ? AppColors.accentDark : AppColors.accent;
+  Color get accentSoft =>
+      isDarkMode ? AppColors.accentSoftDark : AppColors.accentSoft;
+  Color get line => isDarkMode ? AppColors.lineDark : AppColors.line;
+  Color get lineStrong =>
+      isDarkMode ? AppColors.lineStrongDark : AppColors.lineStrong;
+  Color get error => isDarkMode ? AppColors.errorDark : AppColors.error;
+  Color get errorSoft =>
+      isDarkMode ? AppColors.errorSoftDark : AppColors.errorSoft;
+  Color get hintInk => isDarkMode ? AppColors.hintInkDark : AppColors.hintInk;
+  Color get hintSoft =>
+      isDarkMode ? AppColors.hintSoftDark : AppColors.hintSoft;
+}
+
+ThemeData lightTheme() => _buildTheme(Brightness.light);
+
+ThemeData darkTheme() => _buildTheme(Brightness.dark);
+
+ThemeData _buildTheme(Brightness brightness) {
+  final isDark = brightness == Brightness.dark;
+  final scheme = ColorScheme(
+    brightness: brightness,
+    primary: AppColors.accent,
+    onPrimary: AppColors.onAccent,
+    secondary: isDark ? AppColors.accentDark : AppColors.accent,
+    onSecondary: AppColors.onAccent,
+    surface: isDark ? AppColors.paperDark : AppColors.paper,
+    onSurface: isDark ? AppColors.inkDark : AppColors.ink,
+    error: isDark ? AppColors.errorDark : AppColors.error,
+    onError: Colors.white,
+    surfaceContainerHighest: isDark ? AppColors.surfaceDark : AppColors.surface,
+    surfaceTint: Colors.transparent,
+    outline: isDark ? AppColors.lineStrongDark : AppColors.lineStrong,
+    outlineVariant: isDark ? AppColors.lineDark : AppColors.line,
+  );
+
+  final ink = isDark ? AppColors.inkDark : AppColors.ink;
+  final inkMuted = isDark ? AppColors.inkMutedDark : AppColors.inkMuted;
+
+  const radius = 12.0;
+
+  return ThemeData(
+    useMaterial3: true,
+    brightness: brightness,
+    colorScheme: scheme,
+    scaffoldBackgroundColor: scheme.surface,
+    textTheme: TextTheme(
+      displayLarge: TextStyle(
+        fontSize: 40,
+        fontWeight: FontWeight.w800,
+        color: ink,
+        letterSpacing: -1.6,
+        height: 1.05,
       ),
-      shape: WidgetStatePropertyAll(
-        RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
+      headlineMedium: TextStyle(
+        fontSize: 22,
+        fontWeight: FontWeight.w700,
+        color: ink,
+        letterSpacing: -0.4,
+        height: 1.2,
       ),
-      textStyle: const WidgetStatePropertyAll(
-        TextStyle(
-          fontSize: 15,
-          fontWeight: FontWeight.w600,
+      titleLarge: TextStyle(
+        fontSize: 16,
+        fontWeight: FontWeight.w700,
+        color: ink,
+        letterSpacing: 0.1,
+      ),
+      titleMedium: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w600,
+        color: ink,
+        letterSpacing: 0.1,
+      ),
+      bodyLarge: TextStyle(
+        fontSize: 15,
+        fontWeight: FontWeight.w500,
+        color: ink,
+        height: 1.5,
+      ),
+      bodyMedium: TextStyle(
+        fontSize: 13,
+        color: inkMuted,
+        height: 1.4,
+      ),
+      labelLarge: TextStyle(
+        fontSize: 14,
+        fontWeight: FontWeight.w700,
+        color: AppColors.onAccent,
+        letterSpacing: 0.2,
+      ),
+    ),
+    appBarTheme: AppBarTheme(
+      backgroundColor: Colors.transparent,
+      foregroundColor: ink,
+      elevation: 0,
+      scrolledUnderElevation: 0,
+      titleTextStyle: TextStyle(
+        fontSize: 17,
+        fontWeight: FontWeight.w800,
+        color: ink,
+        letterSpacing: -0.2,
+      ),
+    ),
+    elevatedButtonTheme: ElevatedButtonThemeData(
+      style: ElevatedButton.styleFrom(
+        backgroundColor: AppColors.accent,
+        foregroundColor: AppColors.onAccent,
+        elevation: 0,
+        minimumSize: const Size(0, 52),
+        padding: const EdgeInsets.symmetric(horizontal: 28, vertical: 16),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 16,
+          fontWeight: FontWeight.w700,
           letterSpacing: 0.2,
         ),
       ),
     ),
-  ),
-  cardTheme: CardThemeData(
-    color: AppColors.black,
-    elevation: 0,
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(0)),
-    surfaceTintColor: Colors.transparent,
-  ),
-);
+    outlinedButtonTheme: OutlinedButtonThemeData(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: ink,
+        minimumSize: const Size(0, 52),
+        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+        side: BorderSide(color: inkMuted.withValues(alpha: 0.55), width: 1.2),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(radius),
+        ),
+        textStyle: const TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w600,
+          letterSpacing: 0.1,
+        ),
+      ),
+    ),
+    cardTheme: CardThemeData(
+      color: isDark ? AppColors.surfaceDark : AppColors.surface,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+        side: BorderSide(
+          color: isDark ? AppColors.lineDark : AppColors.line,
+          width: 1,
+        ),
+      ),
+      surfaceTintColor: Colors.transparent,
+    ),
+    dividerTheme: DividerThemeData(
+      color: isDark ? AppColors.lineDark : AppColors.line,
+      thickness: 1,
+      space: 1,
+    ),
+  );
+}

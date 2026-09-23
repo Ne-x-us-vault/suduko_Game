@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:sudoku_game/theme.dart';
 
 class NumberPad extends StatelessWidget {
-  final Function(int number) onNumberTap;
+  final ValueChanged<int> onNumberTap;
   final VoidCallback onErase;
   final VoidCallback onUndo;
   final VoidCallback onNotesToggle;
@@ -21,91 +21,34 @@ class NumberPad extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
-
     return Column(
       children: [
-        // Number row
         Row(
           children: List.generate(9, (i) {
             final num = i + 1;
             final count = numberCounts[num] ?? 9;
-            final isComplete = count == 0;
-
             return Expanded(
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 2.5),
-                child: GestureDetector(
-                  onTap: isComplete ? null : () => onNumberTap(num),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 150),
-                    height: 52,
-                    decoration: BoxDecoration(
-                      color: isComplete
-                          ? Colors.transparent
-                          : (isDark
-                              ? AppColors.grey900
-                              : AppColors.white),
-                      borderRadius: BorderRadius.circular(0),
-                      border: Border.all(
-                        color: isComplete
-                            ? Colors.transparent
-                            : (isDark
-                                ? AppColors.grey800
-                                : AppColors.gridThin),
-                        width: 1,
-                      ),
-                      boxShadow: null,
-                    ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          '$num',
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.w600,
-                            color: isComplete
-                                ? Colors.transparent
-                                : (isDark
-                                    ? AppColors.white
-                                    : AppColors.black),
-                          ),
-                        ),
-                        if (!isComplete)
-                          Padding(
-                            padding: const EdgeInsets.only(top: 1),
-                            child: Text(
-                              '$count',
-                              style: TextStyle(
-                                fontSize: 9,
-                                fontWeight: FontWeight.w500,
-                                color: isDark
-                                    ? AppColors.grey500
-                                    : AppColors.grey400,
-                              ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  ),
+                child: _NumberKey(
+                  number: num,
+                  remaining: count,
+                  onTap: () => onNumberTap(num),
                 ),
               ),
             );
           }),
         ),
         const SizedBox(height: 10),
-        // Action row
         Row(
           children: [
             Expanded(
               child: _buildAction(
                 context,
-                icon: Icons.delete_outline_rounded,
+                icon: Icons.backspace_outlined,
                 label: 'Erase',
                 onTap: onErase,
                 isActive: false,
-                isDark: isDark,
               ),
             ),
             const SizedBox(width: 8),
@@ -116,7 +59,6 @@ class NumberPad extends StatelessWidget {
                 label: 'Notes',
                 onTap: onNotesToggle,
                 isActive: notesMode,
-                isDark: isDark,
               ),
             ),
             const SizedBox(width: 8),
@@ -127,7 +69,6 @@ class NumberPad extends StatelessWidget {
                 label: 'Undo',
                 onTap: onUndo,
                 isActive: false,
-                isDark: isDark,
               ),
             ),
           ],
@@ -142,44 +83,122 @@ class NumberPad extends StatelessWidget {
     required String label,
     required VoidCallback onTap,
     required bool isActive,
-    required bool isDark,
   }) {
     return GestureDetector(
       onTap: onTap,
       child: AnimatedContainer(
-        duration: const Duration(milliseconds: 150),
-        padding: const EdgeInsets.symmetric(vertical: 10),
+        duration: const Duration(milliseconds: 160),
+        padding: const EdgeInsets.symmetric(vertical: 11),
         decoration: BoxDecoration(
-          color: isActive
-              ? (isDark ? AppColors.white : AppColors.black)
-              : (isDark ? AppColors.grey900 : AppColors.white),
-          borderRadius: BorderRadius.circular(0),
+          color: isActive ? context.accent : context.surface,
+          borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isActive
-                ? (isDark ? AppColors.black : AppColors.white)
-                : (isDark ? AppColors.grey800 : AppColors.gridThin),
-            width: isActive ? 2.0 : 1,
+            color: isActive ? context.accent : context.line,
+            width: 1.2,
           ),
+          boxShadow: isActive
+              ? [
+                  BoxShadow(
+                    color: context.accent.withValues(alpha: 0.3),
+                    blurRadius: 14,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
         ),
         child: Column(
           children: [
             Icon(
               icon,
-              size: 18,
-              color: isActive
-                  ? (isDark ? AppColors.black : AppColors.white)
-                  : (isDark ? AppColors.grey400 : AppColors.grey600),
+              size: 20,
+              color: isActive ? AppColors.onAccent : context.inkMuted,
             ),
             const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.w500,
-                color: isActive
-                    ? (isDark ? AppColors.black : AppColors.white)
-                    : (isDark ? AppColors.grey500 : AppColors.grey400),
+                fontSize: 11,
+                fontWeight: FontWeight.w700,
+                color: isActive ? AppColors.onAccent : context.inkMuted,
               ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _NumberKey extends StatelessWidget {
+  final int number;
+  final int remaining;
+  final VoidCallback onTap;
+
+  const _NumberKey({
+    required this.number,
+    required this.remaining,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final complete = remaining == 0;
+
+    return GestureDetector(
+      onTap: complete ? null : onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 160),
+        height: 54,
+        decoration: BoxDecoration(
+          color: complete ? Colors.transparent : context.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: complete
+                ? Colors.transparent
+                : context.line.withValues(alpha: 0.85),
+            width: 1.2,
+          ),
+          boxShadow: complete
+              ? null
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 8,
+                    offset: const Offset(0, 3),
+                  ),
+                ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              '$number',
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.w700,
+                color: complete
+                    ? context.inkMuted.withValues(alpha: 0.35)
+                    : context.ink,
+              ),
+            ),
+            SizedBox(
+              height: 13,
+              child: complete
+                  ? Icon(
+                      Icons.check_rounded,
+                      size: 12,
+                      color: context.inkMuted.withValues(alpha: 0.5),
+                    )
+                  : Text(
+                      '$remaining',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        color: remaining <= 2
+                            ? context.error
+                            : context.inkMuted,
+                      ),
+                    ),
             ),
           ],
         ),
